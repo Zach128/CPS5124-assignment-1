@@ -1,9 +1,11 @@
 # CPS5124-assignment-1
-Source code for my assignment in CPS5124 study unit
+Source code for my CPS5124 study unit assignment.
 
 ## Tasks
 ### Task 0
 - [ ] Add JSON file parsing to load scene data.
+- [ ] Output a test png/jpg image.
+
 ### Task 1
 - [ ] Implement basic ray-tracer functions.
     - [ ] `intersects` function, returning the point of intersection.
