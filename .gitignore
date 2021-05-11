@@ -31,6 +31,9 @@
 *.out
 *.app
 
+# Build targets
+keithray
+
 # CMake
 CMakeFiles
 cmake_install.cmake

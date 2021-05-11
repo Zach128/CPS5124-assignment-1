@@ -34,5 +34,8 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
 
 # JSON
-set(STB_DIR "${LIB_DIR}/stb")
-target_include_directories(${PROJECT_NAME} PRIVATE "${STB_DIR}")
+# Add the library as a single-header interface
+set(nlohmann_json_DIR "${LIB_DIR}/json")
+add_subdirectory("${nlohmann_json_DIR}")
+find_package(nlohmann_json 3.2.0 REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
