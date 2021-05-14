@@ -1,0 +1,135 @@
+{
+  "cameras" : [{
+    "id" : "pinhole",
+    "type" : "pinhole",
+    "fov" : 45,
+    "aspect" : 1.0,
+    "distance" : 5.0,
+    "position" : [0, 0, -15],
+    "target" : [0, 0, 0]
+  }],
+  
+  "materials" : [{
+    "id" : "red diffuse",
+    "type" : "diffuse",
+    "rho" : [0.9, 0, 0]
+  }, {
+    "id" : "green diffuse",
+    "type" : "diffuse",
+    "rho" : [0, 0.9, 0]
+  }, {
+    "id" : "blue diffuse",
+    "type" : "diffuse",
+    "rho" : [0, 0, 0.9]
+  }, {
+    "id" : "grey diffuse",
+    "type" : "diffuse",
+    "rho" : [0.8, 0.8, 0.8]
+  }, {
+    "id" : "white diffuse",
+    "type" : "diffuse",
+    "rho" : [1.0, 1.0, 1.0]
+  }, {
+    "id" : "specular",
+    "type" : "specular reflection",
+    "rho" : [0.9, 0.9, 0.9]
+  }, {
+    "id" : "fresnel dielectric",
+    "type" : "fresnel dielectric",
+    "rhoR" : [0.9, 0.9, 0.9],
+    "rhoT" : [0.9, 0.9, 0.9],
+    "eta" : 1.5
+  }],
+  
+  "shapes" : [{
+    "id" : "left wall",
+    "type" : "sphere",
+    "centre" : [-505, 0, 0],
+    "radius" : 500
+  }, {
+    "id" : "right wall",
+    "type" : "sphere",
+    "centre" : [505, 0, 0],
+    "radius" : 500
+  }, {
+    "id" : "far wall",
+    "type" : "sphere",
+    "centre" : [0, 0, 505],
+    "radius" : 500
+  }, {
+    "id" : "ceiling",
+    "type" : "sphere",
+    "centre" : [0, 505, 0],
+    "radius" : 500
+  }, {
+    "id" : "floor",
+    "type" : "sphere",
+    "centre" : [0, -505, 0],
+    "radius" : 500
+  }, {
+    "id" : "sphere 01",
+    "type" : "sphere",
+    "centre" : [2, -3.5, -1],
+    "radius" : 1.5
+  }, {
+    "id" : "sphere 02",
+    "type" : "sphere",
+    "centre" : [-2, -3.5, -1],
+    "radius" : 1.5
+  }],
+   
+  "lights" : [{
+    "id" : "point light",
+    "type" : "point",
+    "position" : [0, 4.0, -1],
+    "power" : [300, 300, 300]
+  }],
+  
+  "scene" : {
+    "camera" : "pinhole",
+    "lights" : ["point light"],
+    "primitives" : [{
+      "id" : "left wall",
+      "type" : "geometric",
+      "shape" : "left wall",
+      "material" : "green diffuse"
+    }, {
+      "id" : "right wall",
+      "type" : "geometric",
+      "shape" : "right wall",
+      "material" : "red diffuse"
+    }, {
+      "id" : "far wall",
+      "type" : "geometric",
+      "shape" : "far wall",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "ceiling",
+      "type" : "geometric",
+      "shape" : "ceiling",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "floor",
+      "type" : "geometric",
+      "shape" : "floor",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "sphere 01",
+      "type" : "geometric",
+      "shape" : "sphere 01",
+      "material" : "fresnel dielectric"
+    }, {
+      "id" : "sphere 02",
+      "type" : "geometric",
+      "shape" : "sphere 02",
+      "material" : "specular"
+    }],
+    "renderer" : {
+      "type" : "WRT",
+      "dimensions" : [512, 512],
+      "samples" : 8,
+      "depth" : 12,
+      "output" : "../output/assignment_01.ppm"
+    }
+  }
+}

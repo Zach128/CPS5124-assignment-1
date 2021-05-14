@@ -1,12 +1,9 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
+#include "loaders/scene-loader.hpp"
 
 int main() {
-    json test = {
-        {"Testing", 1234}
-    };
+    SceneLoader loader = SceneLoader();
 
-    std::cout << test.dump(2) << std::endl;
+    loader.LoadSceneFile("assignment_01.json");
 }
