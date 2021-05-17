@@ -8,18 +8,15 @@
 using json = nlohmann::json;
 
 Camera LoadCamera(const json &j) {
+    Camera c;
+
     if (j["type"] == "pinhole") {
-        return PinholeCamera(
-            j["id"].get<std::string>(),
-            j["fov"].get<float>(),
-            j["aspect"].get<float>(),
-            j["distance"].get<float>(),
-            j["position"].get<std::vector<float>>().data(),
-            j["target"].get<std::vector<float>>().data()
-        );
+        c = j.get<PinholeCamera>();
     } else {
-        throw std::runtime_error("Unrecognised camera \"" + j["type"].get<std::string>() + "\" in scene file.\n");
+        c = j.get<Camera>();
     }
+
+    return c;
 }
 
 void LoadCameras(const json &j, std::vector<Camera> &cameras) {
