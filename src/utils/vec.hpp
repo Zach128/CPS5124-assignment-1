@@ -23,7 +23,7 @@ typedef vec<4, float> vec4f;
 
 template <typename T> struct vec<2,T> {
     vec() : x(T()), y(T()) {}
-    vec(const float *V) : x(V[0]), y(V[1]) {}
+    vec(const T *V) : x(V[0]), y(V[1]) {}
     vec(T X, T Y) : x(X), y(Y) {}
     template <class U> vec<2,T>(const vec<2,U> &v);
           T& operator[](const size_t i)       { assert(i<2); return i<=0 ? x : y; }
@@ -33,7 +33,7 @@ template <typename T> struct vec<2,T> {
 
 template <typename T> struct vec<3,T> {
     vec() : x(T()), y(T()), z(T()) {}
-    vec(const float *V) : x(V[0]), y(V[1]), z(V[2]) {}
+    vec(const T *V) : x(V[0]), y(V[1]), z(V[2]) {}
     vec(T X, T Y, T Z) : x(X), y(Y), z(Z) {}
           T& operator[](const size_t i)       { assert(i<3); return i<=0 ? x : (1==i ? y : z); }
     const T& operator[](const size_t i) const { assert(i<3); return i<=0 ? x : (1==i ? y : z); }
@@ -44,7 +44,7 @@ template <typename T> struct vec<3,T> {
 
 template <typename T> struct vec<4,T> {
     vec() : x(T()), y(T()), z(T()), w(T()) {}
-    vec(const float *V) : x(V[0]), y(V[1]), z(V[2]), w(V[3]) {}
+    vec(const T *V) : x(V[0]), y(V[1]), z(V[2]), w(V[3]) {}
     vec(T X, T Y, T Z, T W) : x(X), y(Y), z(Z), w(W) {}
           T& operator[](const size_t i)       { assert(i<4); return i<=0 ? x : (1==i ? y : (2==i ? z : w)); }
     const T& operator[](const size_t i) const { assert(i<4); return i<=0 ? x : (1==i ? y : (2==i ? z : w)); }

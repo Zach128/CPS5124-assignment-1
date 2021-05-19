@@ -28,3 +28,17 @@ void LoadCameras(const json &j, std::vector<Camera> &cameras) {
         }
     }
 }
+
+void LoadCameras(const json &j, std::vector<std::shared_ptr<Camera>> &cameras) {
+    cameras = std::vector<std::shared_ptr<Camera>>();
+
+    if (!j.at("cameras").empty()) {
+        for (json cam : j.at("cameras")) {
+            if (cam.at("type") == "pinhole") {
+                cameras.push_back(cam.get<std::shared_ptr<PinholeCamera>>());
+            } else {
+                cameras.push_back(cam.get<std::shared_ptr<Camera>>());
+            }
+        }
+    }
+}
