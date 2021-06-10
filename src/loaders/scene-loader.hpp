@@ -13,7 +13,8 @@
 #include "loaders/material-loader.hpp"
 #include "loaders/shapes-loader.hpp"
 #include "loaders/lights-loader.hpp"
-#include "models/renderers/renderer.hpp"
+#include "renderers/renderer.hpp"
+#include "renderers/whitted-renderer/whitted-renderer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -27,12 +28,12 @@ public:
     std::vector<std::shared_ptr<Shape>> shapes;
     std::vector<std::shared_ptr<Light>> lights;
     std::vector<std::shared_ptr<Primitive>> primitives;
-    Renderer renderer;
+    std::shared_ptr<Renderer> renderer;
     
     SceneLoader() {}
     SceneLoader(std::string base_path) : base_path(base_path) {}
 
-    void LoadSceneFile(const std::string &file_name) {
+    void LoadSceneFile(const std::string &file_name, Scene &scene) {
         // Build the file path to the scene.
         fs::path dir(base_path);
         fs::path file(file_name);
@@ -55,15 +56,9 @@ public:
             LoadShapes(j, shapes);
             LoadLights(j, lights);
             LoadPrimitives(j, primitives);
+            LoadRenderer(j);
 
-            // Load the renderer properties.
-            j.at("scene").at("renderer").get_to(renderer);
-
-            std::cout << cameras[0]->position.z << std::endl;
-            std::cout << std::static_pointer_cast<Sphere>(shapes[0])->position.x << std::endl;
-            std::cout << std::static_pointer_cast<DiffuseMaterial>(materials[0])->rho.x << std::endl;
-            std::cout << lights[0]->intensity.x << std::endl;
-            std::cout << primitives[0]->shape.position.x << std::endl;
+            scene = Scene(cameras, materials, shapes, lights, renderer);
         } else {
             std::cerr << "Failed to load " << file_name << std::endl;
         }
@@ -111,6 +106,18 @@ private:
                         *(found_mat->get())
                     )));
                 }
+            }
+        }
+    }
+
+    void LoadRenderer(const json &j) {
+        const json &r = j.at("scene").at("renderer");
+
+        if (!r.empty()) {
+            if (r.at("type").get<std::string>() == "WRT") {
+                renderer = r.get<std::shared_ptr<WhittedRenderer>>();
+            } else {
+                renderer = r.get<std::shared_ptr<Renderer>>();
             }
         }
     }

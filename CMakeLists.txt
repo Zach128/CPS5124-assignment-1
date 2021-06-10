@@ -26,8 +26,9 @@ enable_cxx_compiler_flag_if_supported("-O3")
 
 file(
     GLOB SOURCES
-    "${SRC_DIR}/*.h"
+    "${SRC_DIR}/*.hpp"
     "${SRC_DIR}/*.cpp"
+    "${SRC_DIR}/**/*.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

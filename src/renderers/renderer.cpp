@@ -1,20 +1,19 @@
-#pragma once
 #include <iostream>
-#include <nlohmann/json.hpp>
+
 #include "utils/vec.hpp"
+#include "renderers/renderer.hpp"
 
-using json = nlohmann::json;
+void Renderer::prepare() {
+    std::cout << "Preparing..." << std::endl;
+}
 
-struct Renderer {
-    std::string type;
-    std::string output;
-    vec2i dimensions;
-    int samples;
-    int depth;
+void Renderer::render() {
+    std::cout << "Rendering..." << std::endl;
+}
 
-    Renderer(const std::string &type, const std::string &output, const vec2i &dimensions, int samples, int depth) : type(type), output(output), dimensions(dimensions), samples(samples), depth(depth) {}
-    Renderer() {}
-};
+void Renderer::save() {
+    std::cout << "Saving..." << std::endl;
+}
 
 void from_json(const json &j, Renderer &r) {
     j.at("type").get_to(r.type);
