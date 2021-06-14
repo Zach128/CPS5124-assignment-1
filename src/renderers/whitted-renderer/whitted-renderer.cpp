@@ -7,12 +7,10 @@
 void WhittedRenderer::prepare() {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
-    framebuffer = std::vector<vec3f>(dimensions.x * dimensions.y);
+    framebuffer = std::vector<vec3f>(width * height);
 }
 
 void WhittedRenderer::render() {
-    const int width = dimensions.x;
-    const int height = dimensions.y;
 
     std::cout << "Rendering..." << std::endl;
     
@@ -24,9 +22,6 @@ void WhittedRenderer::render() {
 }
 
 void WhittedRenderer::save() {
-    const int width = dimensions.x;
-    const int height = dimensions.y;
-
     std::cout << "Saving final result..." << std::endl;
 
     std::ofstream ofs;
@@ -50,7 +45,8 @@ void from_json(const json &j, WhittedRenderer &r) {
     j.at("samples").get_to(r.samples);
     j.at("depth").get_to(r.depth);
     j.at("output").get_to(r.output);
-    r.dimensions = vec2i(j.at("dimensions").get<std::vector<int>>().data());
+    j.at("dimensions")[0].get_to(r.width);
+    j.at("dimensions")[1].get_to(r.height);
 }
 
 void from_json(const json &j, std::shared_ptr<WhittedRenderer> &r) {
@@ -60,5 +56,6 @@ void from_json(const json &j, std::shared_ptr<WhittedRenderer> &r) {
     j.at("samples").get_to(r->samples);
     j.at("depth").get_to(r->depth);
     j.at("output").get_to(r->output);
-    r->dimensions = vec2i(j.at("dimensions").get<std::vector<int>>().data());
+    j.at("dimensions")[0].get_to(r->width);
+    j.at("dimensions")[1].get_to(r->height);
 }

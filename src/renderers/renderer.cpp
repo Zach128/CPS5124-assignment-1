@@ -8,7 +8,9 @@ void from_json(const json &j, Renderer &r) {
     j.at("samples").get_to(r.samples);
     j.at("depth").get_to(r.depth);
     j.at("output").get_to(r.output);
-    r.dimensions = vec2i(j.at("dimensions").get<std::vector<int>>().data());
+    
+    j.at("dimensions")[0].get_to(r.width);
+    j.at("dimensions")[1].get_to(r.height);
 }
 
 void from_json(const json &j, std::shared_ptr<Renderer> &r) {
@@ -18,5 +20,6 @@ void from_json(const json &j, std::shared_ptr<Renderer> &r) {
     j.at("samples").get_to(r->samples);
     j.at("depth").get_to(r->depth);
     j.at("output").get_to(r->output);
-    r->dimensions = vec2i(j.at("dimensions").get<std::vector<int>>().data());
+    j.at("dimensions")[0].get_to(r->width);
+    j.at("dimensions")[1].get_to(r->height);
 }
