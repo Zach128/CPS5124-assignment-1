@@ -16,10 +16,11 @@ public:
 
     Renderer(const std::string &type, const std::string &output, const vec2i &dimensions, int samples, int depth) : type(type), output(output), dimensions(dimensions), samples(samples), depth(depth) {}
     Renderer() {}
+    ~Renderer() {}
 
-    void prepare();
-    void render();
-    void save();
+    virtual void prepare() {};
+    virtual void render() {};
+    virtual void save() {};
 };
 
 void from_json(const json &j, Renderer &r);

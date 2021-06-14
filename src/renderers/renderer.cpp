@@ -3,18 +3,6 @@
 #include "utils/vec.hpp"
 #include "renderers/renderer.hpp"
 
-void Renderer::prepare() {
-    std::cout << "Preparing..." << std::endl;
-}
-
-void Renderer::render() {
-    std::cout << "Rendering..." << std::endl;
-}
-
-void Renderer::save() {
-    std::cout << "Saving..." << std::endl;
-}
-
 void from_json(const json &j, Renderer &r) {
     j.at("type").get_to(r.type);
     j.at("samples").get_to(r.samples);
