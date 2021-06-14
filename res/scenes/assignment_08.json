@@ -1,0 +1,151 @@
+{
+  "cameras" : [{
+    "id" : "pinhole",
+    "type" : "pinhole",
+    "fov" : 45,
+    "aspect" : 1.0,
+    "distance" : 5.0,
+    "position" : [0, -3, -20],
+    "target" : [0, -3, 0]
+  }],
+  
+  "materials" : [{
+    "id" : "grey diffuse",
+    "type" : "diffuse",
+    "rho" : [0.8, 0.8, 0.8]
+  }, {
+    "id" : "white diffuse",
+    "type" : "diffuse",
+    "rho" : [1.0, 1.0, 1.0]
+  }, {
+    "id" : "specular",
+    "type" : "specular reflection",
+    "rho" : [0.9, 0.9, 0.9]
+  }, {
+    "id" : "glossy",
+    "type" : "glossy reflection",
+    "rho" : [0.9, 0.9, 0.9],
+    "roughness" : 0.4
+  }, {
+    "id" : "fresnel dielectric",
+    "type" : "fresnel dielectric",
+    "rhoR" : [0.9, 0.9, 0.9],
+    "rhoT" : [0.9, 0.9, 0.9],
+    "eta" : 1.5
+  }],
+  
+  "shapes" : [{
+    "id" : "far wall",
+    "type" : "sphere",
+    "centre" : [0, 0, 505],
+    "radius" : 500
+  }, {
+    "id" : "floor",
+    "type" : "sphere",
+    "centre" : [0, -505, 0],
+    "radius" : 500
+  }, {
+    "id" : "sphere 01",
+    "type" : "sphere",
+    "centre" : [6, -4, -1],
+    "radius" : 1
+  }, {
+    "id" : "sphere 02",
+    "type" : "sphere",
+    "centre" : [3, -4, -1],
+    "radius" : 1
+  }, {
+    "id" : "sphere 03",
+    "type" : "sphere",
+    "centre" : [0, -4, -1],
+    "radius" : 1
+  }, {
+    "id" : "sphere 04",
+    "type" : "sphere",
+    "centre" : [-3, -4, -1],
+    "radius" : 1
+  }, {
+    "id" : "area light 02",
+    "type" : "sphere",
+    "centre" : [-6, -4, -1],
+    "radius" : 1
+  }, {
+    "id" : "area light",
+    "type" : "sphere",
+    "centre" : [6, 2, -1],
+    "radius" : 1
+  }],
+   
+  "lights" : [{
+    "id" : "point light",
+    "type" : "point",
+    "position" : [0, -0.5, -1],
+    "power" : [300, 300, 300]
+  }, {
+    "id" : "area light",
+    "type" : "area",
+    "shape" : "area light",
+    "power" : [32, 30, 28]
+  }, {
+    "id" : "area light 02",
+    "type" : "area",
+    "shape" : "area light 02",
+    "power" : [5, 6, 7]
+  }],
+  
+  "scene" : {
+    "camera" : "pinhole",
+    "lights" : ["area light", "area light 02"],
+    "primitives" : [{
+      "id" : "area light",
+      "type" : "emissive",
+      "shape" : "area light",
+      "light" : "area light",
+      "material" : "white diffuse"
+    }, {
+      "id" : "far wall",
+      "type" : "geometric",
+      "shape" : "far wall",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "floor",
+      "type" : "geometric",
+      "shape" : "floor",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "sphere 01",
+      "type" : "geometric",
+      "shape" : "sphere 01",
+      "material" : "glossy"
+    }, {
+      "id" : "sphere 02",
+      "type" : "geometric",
+      "shape" : "sphere 02",
+      "material" : "fresnel dielectric"
+    }, {
+      "id" : "sphere 03",
+      "type" : "geometric",
+      "shape" : "sphere 03",
+      "material" : "specular"
+    }, {
+      "id" : "sphere 04",
+      "type" : "geometric",
+      "shape" : "sphere 04",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "sphere 05",
+      "type" : "emissive",
+      "shape" : "area light 02",
+      "light" : "area light 02",
+      "material" : "white diffuse"
+    }],
+
+    "renderer" : {
+      "type" : "PT",
+      "dimensions" : [512, 512],
+      "samples" : 4096,
+      "depth" : 6,
+      "output" : "../output/assignment_08.ppm"
+    }
+  }
+}
