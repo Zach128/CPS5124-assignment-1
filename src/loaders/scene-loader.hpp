@@ -58,7 +58,7 @@ public:
             LoadPrimitives(j, primitives);
             LoadRenderer(j);
 
-            scene = Scene(cameras, materials, shapes, lights, renderer);
+            scene = Scene(cameras, materials, shapes, lights, renderer, primitives);
         } else {
             std::cerr << "Failed to load " << file_name << std::endl;
         }
@@ -102,8 +102,8 @@ private:
                     primitives.push_back(std::make_shared<Primitive>(Primitive(
                         primitive.at("id").get<std::string>(),
                         primitive.at("type").get<std::string>(),
-                        *(found_shape->get()),
-                        *(found_mat->get())
+                        found_shape[0],
+                        found_mat[0]
                     )));
                 }
             }

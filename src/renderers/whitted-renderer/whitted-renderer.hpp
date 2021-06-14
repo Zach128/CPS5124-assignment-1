@@ -1,5 +1,8 @@
 #pragma once
+
+#include "models/cameras/camera.hpp"
 #include "renderers/renderer.hpp"
+#include "models/primitive.hpp"
 
 class WhittedRenderer : public Renderer {
 private:
@@ -13,7 +16,7 @@ public:
     ~WhittedRenderer() {}
 
     void prepare();
-    void render();
+    void render(const std::shared_ptr<Camera> &camera, const std::vector<std::shared_ptr<Primitive>> &primitives);
     void save();
 };
 

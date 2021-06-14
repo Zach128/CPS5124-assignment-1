@@ -1,7 +1,11 @@
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include "utils/vec.hpp"
+#include "models/cameras/camera.hpp"
+#include "models/primitive.hpp"
+
 #include "whitted-renderer.hpp"
 
 void WhittedRenderer::prepare() {
@@ -10,15 +14,26 @@ void WhittedRenderer::prepare() {
     framebuffer = std::vector<vec3f>(width * height);
 }
 
-void WhittedRenderer::render() {
+void WhittedRenderer::render(const std::shared_ptr<Camera> &camera, const std::vector<std::shared_ptr<Primitive>> &primitives) {
+    const int fov = M_PI/2.;
 
     std::cout << "Rendering..." << std::endl;
-    
+
     for (size_t j = 0; j < height; j++) {
         for(size_t i = 0; i < width; i++) {
-            framebuffer[i + j * width] = vec3f(j / float(height), i / float(width), 0);
+            float dir_x = (i + 0.5) - width / 2.;
+            float dir_y = -(j + 0.5) + height / 2.;
+            float dir_z = -height / (2. * tan(fov / 2.));
+
+            framebuffer[i + j * width] = camera->cast_ray(vec3f(0, 0, 0), vec3f(dir_x, dir_y, dir_z).normalize(), primitives);
         }
     }
+
+    // for (size_t j = 0; j < height; j++) {
+    //     for(size_t i = 0; i < width; i++) {
+    //         framebuffer[i + j * width] = vec3f(j / float(height), i / float(width), 0);
+    //     }
+    // }
 }
 
 void WhittedRenderer::save() {

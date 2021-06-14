@@ -1,5 +1,7 @@
 #pragma once
 #include <nlohmann/json.hpp>
+
+#include "models/primitive.hpp"
 #include "models/cameras/camera.hpp"
 
 using json = nlohmann::json;
@@ -10,20 +12,9 @@ struct PinholeCamera : Camera {
         : Camera(id, "pinhole", fov, aspect, distance, position, target) {}
     
     PinholeCamera() : Camera() {}
+
+    vec3f cast_ray(const vec3f &orig, const vec3f &dir, const std::vector<std::shared_ptr<Primitive>> &primitives);
 };
 
-void from_json(const json &j, PinholeCamera &c) {
-  nlohmann::from_json(j, static_cast<Camera &>(c));
-}
-
-void from_json(const json &j, std::shared_ptr<PinholeCamera> &p) {
-  p = std::make_shared<PinholeCamera>();
-
-  j.at("id").get_to(p->id);
-  j.at("type").get_to(p->type);
-  j.at("fov").get_to(p->fov);
-  j.at("aspect").get_to(p->aspect);
-  j.at("distance").get_to(p->distance);
-  p->position = vec3f(j.at("position").get<std::vector<float>>().data());
-  p->target = vec3f(j.at("target").get<std::vector<float>>().data());
-}
+void from_json(const json &j, PinholeCamera &c);
+void from_json(const json &j, std::shared_ptr<PinholeCamera> &p);

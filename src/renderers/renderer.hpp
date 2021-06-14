@@ -2,7 +2,10 @@
 
 #include <iostream>
 #include <nlohmann/json.hpp>
+
 #include "utils/vec.hpp"
+#include "models/cameras/camera.hpp"
+#include "models/primitive.hpp"
 
 using json = nlohmann::json;
 
@@ -20,7 +23,7 @@ public:
     ~Renderer() {}
 
     virtual void prepare() {};
-    virtual void render() {};
+    virtual void render(const std::shared_ptr<Camera> &, const std::vector<std::shared_ptr<Primitive>> &) {};
     virtual void save() {};
 };
 
