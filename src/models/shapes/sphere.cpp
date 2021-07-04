@@ -2,21 +2,19 @@
 
 #include "sphere.hpp"
 
-bool Sphere::ray_intersect(const vec3f &, const vec3f &, float &) const {
-    std::cout << "Sphere!" << std::endl;
+bool Sphere::ray_intersect(const vec3f &orig, const vec3f &dir, float &t0) const {
+    vec3f L = position - orig;
+    float tca = L * dir;
+    float d2 = L * L - tca * tca;
 
-    // vec3f L = position - orig;
-    // float tca = L * dir;
-    // float d2 = L * L - tca * tca;
+    if (d2 > radius * radius) return false;
 
-    // if (d2 > radius * radius) return false;
+    float thc = sqrtf(radius * radius - d2);
+    t0 = tca - thc;
+    float t1 = tca + thc;
 
-    // float thc = sqrtf(radius * radius - d2);
-    // t0 = tca - thc;
-    // float t1 = tca + thc;
-
-    // if (t0 < 0) t0 = t1;
-    // if (t0 < 0) return false;
+    if (t0 < 0) t0 = t1;
+    if (t0 < 0) return false;
 
     return true;
 }

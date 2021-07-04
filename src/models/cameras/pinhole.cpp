@@ -11,11 +11,15 @@ vec3f PinholeCamera::cast_ray(const vec3f &orig, const vec3f &dir, const std::ve
 
     float sphere_dist = std::numeric_limits<float>::max();
 
-    if(!primitives[0]->shape->ray_intersect(orig, dir, sphere_dist)) {
-        return vec3f(0.2, 0.7, 0.8);
+    // Iterate over the entire list of primitives, checking which one is hit by the ray.
+    for(const std::shared_ptr<Primitive> &primitive : primitives) {
+      // If we hit one, return its colour
+      if(primitive->shape->ray_intersect(orig, dir, sphere_dist)) {
+        return primitive->material->getColour();
+      }
     }
 
-    return vec3f(0.4, 0.4, 0.3);
+    return vec3f(0.2, 0.7, 0.8);
 }
 
 void from_json(const json &j, PinholeCamera &c) {

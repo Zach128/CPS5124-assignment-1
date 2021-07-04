@@ -21,6 +21,7 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera, const std::v
 
     for (size_t j = 0; j < height; j++) {
         for(size_t i = 0; i < width; i++) {
+            // Generate direction coordinates for the given ray.
             float dir_x = (i + 0.5) - width / 2.;
             float dir_y = -(j + 0.5) + height / 2.;
             float dir_z = -height / (2. * tan(fov / 2.));
@@ -28,12 +29,6 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera, const std::v
             framebuffer[i + j * width] = camera->cast_ray(vec3f(0, 0, 0), vec3f(dir_x, dir_y, dir_z).normalize(), primitives);
         }
     }
-
-    // for (size_t j = 0; j < height; j++) {
-    //     for(size_t i = 0; i < width; i++) {
-    //         framebuffer[i + j * width] = vec3f(j / float(height), i / float(width), 0);
-    //     }
-    // }
 }
 
 void WhittedRenderer::save() {

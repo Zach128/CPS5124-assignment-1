@@ -9,7 +9,7 @@ int main() {
 
     loader.LoadSceneFile("assignment_01.json", s);
     
-    s.renderer->prepare();
+    s.prepare();
     s.render();
-    s.renderer->save();
+    s.save();
 }
