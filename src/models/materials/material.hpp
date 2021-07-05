@@ -7,12 +7,14 @@
 
 using json = nlohmann::json;
 
+class Renderer;
+
 struct Material : TypedElement {
     Material(const std::string &id, const std::string &type) : TypedElement(id, type) {}
 
     Material() {}
 
-    virtual vec3f getColour() { return vec3f(0, 0, 0); };
+    virtual vec3f renderer_get_colour(Renderer &) { return vec3f(0, 0, 0); };
 };
 
 void from_json(const json &j, Material &m);

@@ -5,6 +5,8 @@
 
 using json = nlohmann::json;
 
+class Renderer;
+
 struct DiffuseMaterial : Material {
     vec3f rho;
 
@@ -12,7 +14,7 @@ struct DiffuseMaterial : Material {
     
     DiffuseMaterial() {}
 
-    vec3f getColour();
+    vec3f renderer_get_colour(Renderer &renderer);
 };
 
 void from_json(const json &j, DiffuseMaterial &d);

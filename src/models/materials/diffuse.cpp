@@ -1,8 +1,10 @@
 #include "utils/vec.hpp"
+#include "renderers/renderer.hpp"
+
 #include "diffuse.hpp"
 
-vec3f DiffuseMaterial::getColour() {
-    return rho;
+vec3f DiffuseMaterial::renderer_get_colour(Renderer &renderer) {
+    return renderer.get_diffuse(*this);
 }
 
 void from_json(const json &j, DiffuseMaterial &d) {

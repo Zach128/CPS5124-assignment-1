@@ -53,7 +53,7 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera) {
     for(const std::shared_ptr<Primitive> &primitive : primitives) {
         // If we hit one, return its colour
         if(primitive->shape->renderer_ray_intersect(*this, sphere_dist)) {
-            return primitive->material->getColour();
+            return primitive->material->renderer_get_colour(*this);
         }
     }
 
@@ -77,6 +77,10 @@ bool WhittedRenderer::ray_intersect(const Sphere &sphere, float &t0) const {
     if (t0 < 0) return false;
 
     return true;
+}
+
+vec3f WhittedRenderer::get_diffuse(const DiffuseMaterial &mat) {
+    return mat.rho;
 }
 
 void WhittedRenderer::save() {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "models/cameras/camera.hpp"
+#include "models/materials/diffuse.hpp"
 #include "renderers/renderer.hpp"
 #include "models/primitive.hpp"
 
@@ -21,6 +22,7 @@ public:
 
     vec3f cast_ray(PinholeCamera &camera);
     bool ray_intersect(const Sphere &sphere, float &t0) const;
+    vec3f get_diffuse(const DiffuseMaterial &mat);
 };
 
 void from_json(const json &j, WhittedRenderer &r);
