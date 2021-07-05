@@ -26,15 +26,7 @@ public:
     
     Scene() {}
 
-    void prepare() {
-        renderer->prepare();
-    }
-
-    void render() {
-        renderer->render(cameras[0], primitives);
-    }
-
-    void save() {
-        renderer->save();
-    }
+    void prepare();
+    void render();
+    void save();
 };

@@ -5,6 +5,9 @@
 
 using json = nlohmann::json;
 
+// Forward declare visitor class
+class Renderer;
+
 class Shape : public TypedElement {
 public:
     vec3f position;
@@ -13,7 +16,7 @@ public:
     Shape() {}
     ~Shape() {}
 
-    virtual bool ray_intersect(const vec3f &, const vec3f &, float &) const { return false; };
+    virtual bool renderer_ray_intersect(const Renderer &, float &t0) const { t0 = 0; return false; }
 };
 
 void from_json(const json &j, Shape &s);

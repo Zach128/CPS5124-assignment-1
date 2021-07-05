@@ -36,6 +36,7 @@ file(
     "${SRC_DIR}/models/shapes/sphere.cpp"
     "${SRC_DIR}/models/cameras/camera.cpp"
     "${SRC_DIR}/models/cameras/pinhole.cpp"
+    "${SRC_DIR}/models/scene.cpp"
     "${SRC_DIR}/renderers/renderer.cpp"
     "${SRC_DIR}/renderers/whitted-renderer/whitted-renderer.cpp"
 )

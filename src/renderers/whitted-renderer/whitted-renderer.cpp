@@ -2,33 +2,81 @@
 #include <fstream>
 #include <cmath>
 
+#include "models/scene.hpp"
 #include "utils/vec.hpp"
 #include "models/cameras/camera.hpp"
+#include "models/cameras/pinhole.hpp"
+#include "models/shapes/sphere.hpp"
 #include "models/primitive.hpp"
 
 #include "whitted-renderer.hpp"
 
-void WhittedRenderer::prepare() {
+const static int fov = M_PI/2.;
+static std::vector<std::shared_ptr<Primitive>> primitives;
+static size_t curr_x = 0, curr_y = 0;
+static vec3f curr_orig, curr_dir;
+
+void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
+    primitives = scene.primitives;
     framebuffer = std::vector<vec3f>(width * height);
 }
 
-void WhittedRenderer::render(const std::shared_ptr<Camera> &camera, const std::vector<std::shared_ptr<Primitive>> &primitives) {
-    const int fov = M_PI/2.;
+void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
 
     std::cout << "Rendering..." << std::endl;
 
-    for (size_t j = 0; j < height; j++) {
-        for(size_t i = 0; i < width; i++) {
-            // Generate direction coordinates for the given ray.
-            float dir_x = (i + 0.5) - width / 2.;
-            float dir_y = -(j + 0.5) + height / 2.;
-            float dir_z = -height / (2. * tan(fov / 2.));
+    // Save the current origin of the camera.
+    curr_orig = camera->position;
 
-            framebuffer[i + j * width] = camera->cast_ray(vec3f(0, 0, 0), vec3f(dir_x, dir_y, dir_z).normalize(), primitives);
+    for (curr_y = 0; curr_y < height; curr_y++) {
+        for(curr_x = 0; curr_x < width; curr_x++) {
+            
+            framebuffer[curr_x + curr_y * width] = camera->renderer_cast_ray(*this);
         }
     }
+}
+
+vec3f WhittedRenderer::cast_ray(PinholeCamera &camera) {
+    // Generate direction coordinates for the given ray.
+    float dir_x = (curr_x + 0.5) - width / 2.;
+    float dir_y = -(curr_y + 0.5) + height / 2.;
+    float dir_z = -height / (2. * tan(fov / 2.));
+
+    // Compute the camera origin and facing direction.
+    curr_dir = vec3f(dir_x, dir_y, dir_z).normalize();
+
+    float sphere_dist = std::numeric_limits<float>::max();
+
+    // Iterate over the entire list of primitives, checking which one is hit by the ray.
+    for(const std::shared_ptr<Primitive> &primitive : primitives) {
+        // If we hit one, return its colour
+        if(primitive->shape->renderer_ray_intersect(*this, sphere_dist)) {
+            return primitive->material->getColour();
+        }
+    }
+
+    // Else, return the environment colour.
+    return vec3f(0.2, 0.7, 0.8);
+}
+
+bool WhittedRenderer::ray_intersect(const Sphere &sphere, float &t0) const {
+    vec3f L = sphere.position - curr_orig;
+    float sq_radius = sphere.radius * sphere.radius;
+    float tca = L * curr_dir;
+    float d2 = L * L - tca * tca;
+
+    if (d2 > sq_radius) return false;
+
+    float thc = sqrtf(sq_radius - d2);
+    t0 = tca - thc;
+    float t1 = tca + thc;
+
+    if (t0 < 0) t0 = t1;
+    if (t0 < 0) return false;
+
+    return true;
 }
 
 void WhittedRenderer::save() {

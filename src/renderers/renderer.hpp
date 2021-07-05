@@ -5,9 +5,14 @@
 
 #include "utils/vec.hpp"
 #include "models/cameras/camera.hpp"
+#include "models/shapes/sphere.hpp"
 #include "models/primitive.hpp"
 
 using json = nlohmann::json;
+
+// Forward declare visited classes.
+class PinholeCamera;
+class Scene;
 
 class Renderer {
 public:
@@ -22,9 +27,12 @@ public:
     Renderer() {}
     ~Renderer() {}
 
-    virtual void prepare() {};
-    virtual void render(const std::shared_ptr<Camera> &, const std::vector<std::shared_ptr<Primitive>> &) {};
+    virtual void prepare(const Scene &) {};
+    virtual void render(const std::shared_ptr<Camera> &) {};
     virtual void save() {};
+
+    virtual vec3f cast_ray(PinholeCamera &) { return vec3f(0, 0, 0); };
+    virtual bool ray_intersect(const Sphere &, float &t0) const { t0 = 0; return false; };
 };
 
 void from_json(const json &j, Renderer &r);

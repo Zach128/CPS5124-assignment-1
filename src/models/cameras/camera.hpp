@@ -6,6 +6,9 @@
 
 using json = nlohmann::json;
 
+// Forward declare visited classes.
+class Renderer;
+
 struct Camera : TypedElement {
     float fov;      // Field of View
     float aspect;   // Aspect ratio
@@ -24,7 +27,7 @@ struct Camera : TypedElement {
     
     Camera() : TypedElement() {}
 
-    virtual vec3f cast_ray(const vec3f &, const vec3f &, const std::vector<std::shared_ptr<Primitive>> &) { return vec3f(0, 0, 0); };
+    virtual vec3f renderer_cast_ray(Renderer &) { return vec3f(0, 0, 0); };
 };
 
 void from_json(const json &j, Camera &c);

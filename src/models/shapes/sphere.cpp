@@ -1,22 +1,10 @@
 #include "utils/vec.hpp"
+#include "renderers/renderer.hpp"
 
 #include "sphere.hpp"
 
-bool Sphere::ray_intersect(const vec3f &orig, const vec3f &dir, float &t0) const {
-    vec3f L = position - orig;
-    float tca = L * dir;
-    float d2 = L * L - tca * tca;
-
-    if (d2 > radius * radius) return false;
-
-    float thc = sqrtf(radius * radius - d2);
-    t0 = tca - thc;
-    float t1 = tca + thc;
-
-    if (t0 < 0) t0 = t1;
-    if (t0 < 0) return false;
-
-    return true;
+bool Sphere::renderer_ray_intersect(const Renderer &renderer, float &t0) const {
+    return renderer.ray_intersect(*this, t0);
 }
 
 void from_json(const json &j, Sphere &s) {

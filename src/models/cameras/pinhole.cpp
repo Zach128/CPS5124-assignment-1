@@ -3,23 +3,12 @@
 #include "models/shapes/sphere.hpp"
 #include "models/cameras/camera.hpp"
 #include "models/primitive.hpp"
+#include "renderers/renderer.hpp"
 
 #include "pinhole.hpp"
 
-vec3f PinholeCamera::cast_ray(const vec3f &orig, const vec3f &dir, const std::vector<std::shared_ptr<Primitive>> &primitives) {
-    // std::cout << "Pinhole!" << std::endl;
-
-    float sphere_dist = std::numeric_limits<float>::max();
-
-    // Iterate over the entire list of primitives, checking which one is hit by the ray.
-    for(const std::shared_ptr<Primitive> &primitive : primitives) {
-      // If we hit one, return its colour
-      if(primitive->shape->ray_intersect(orig, dir, sphere_dist)) {
-        return primitive->material->getColour();
-      }
-    }
-
-    return vec3f(0.2, 0.7, 0.8);
+vec3f PinholeCamera::renderer_cast_ray(Renderer &renderer) {
+  return renderer.cast_ray(*this);
 }
 
 void from_json(const json &j, PinholeCamera &c) {

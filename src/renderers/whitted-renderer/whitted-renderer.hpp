@@ -15,9 +15,12 @@ public:
     WhittedRenderer() : Renderer() {}
     ~WhittedRenderer() {}
 
-    void prepare();
-    void render(const std::shared_ptr<Camera> &camera, const std::vector<std::shared_ptr<Primitive>> &primitives);
+    void prepare(const Scene &scene);
+    void render(const std::shared_ptr<Camera> &camera);
     void save();
+
+    vec3f cast_ray(PinholeCamera &camera);
+    bool ray_intersect(const Sphere &sphere, float &t0) const;
 };
 
 void from_json(const json &j, WhittedRenderer &r);

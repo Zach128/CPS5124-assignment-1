@@ -13,7 +13,7 @@ struct PinholeCamera : Camera {
     
     PinholeCamera() : Camera() {}
 
-    vec3f cast_ray(const vec3f &orig, const vec3f &dir, const std::vector<std::shared_ptr<Primitive>> &primitives);
+    vec3f renderer_cast_ray(Renderer &renderer);
 };
 
 void from_json(const json &j, PinholeCamera &c);
