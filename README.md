@@ -3,14 +3,14 @@ Source code for my CPS5124 study unit assignment.
 
 ## Tasks
 ### Task 0
-- [ ] Add JSON file parsing to load scene data.
-- [ ] Output a test png/jpg image.
+- [x] Add JSON file parsing to load scene data.
+- [x] Output a test png/jpg image.
 
 ### Task 1
-- [ ] Implement basic ray-tracer functions.
-    - [ ] `intersects` function, returning the point of intersection.
-    - [ ] `isOccluded` function, returning whether the ray hits something or not.
-- [ ] Render a depth map as output of the functions.
+- [x] Implement basic ray-tracer functions.
+    - [x] `intersects` function, returning the point of intersection.
+    - [x] `isOccluded` function, returning whether the ray hits something or not.
+- [x] Render a depth map as output of the functions.
 
 ### Task 2
 

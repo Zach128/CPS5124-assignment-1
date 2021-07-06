@@ -74,10 +74,12 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera) {
 void WhittedRenderer::depth_to_frame() {
     for (curr_y = 0; curr_y < height; curr_y++) {
         for(curr_x = 0; curr_x < width; curr_x++) {
+            // Get the current pixel.
             float &curr_pixel = depthbuffer[curr_x + curr_y * width];
 
+            // Post-process the pixel using an inserse exponential function.
             curr_pixel = 1 - curr_pixel / (1 + curr_pixel);
-
+            
             framebuffer[curr_x + curr_y * width] = vec3f(curr_pixel, curr_pixel, curr_pixel);
         }
     }
