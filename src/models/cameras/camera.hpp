@@ -1,8 +1,13 @@
 #pragma once
 #include "utils/vec.hpp"
 #include "models/object.hpp"
+#include "models/shapes/shape.hpp"
+#include "models/primitive.hpp"
 
 using json = nlohmann::json;
+
+// Forward declare visited classes.
+class Renderer;
 
 struct Camera : TypedElement {
     float fov;      // Field of View
@@ -21,26 +26,9 @@ struct Camera : TypedElement {
           target(target) {}
     
     Camera() : TypedElement() {}
+
+    virtual vec3f renderer_cast_ray(Renderer &) { return vec3f(0, 0, 0); };
 };
 
-void from_json(const json &j, Camera &c) {
-  j.at("id").get_to(c.id);
-  j.at("type").get_to(c.type);
-  j.at("fov").get_to(c.fov);
-  j.at("aspect").get_to(c.aspect);
-  j.at("distance").get_to(c.distance);
-  c.position = vec3f(j.at("position").get<std::vector<float>>().data());
-  c.target = vec3f(j.at("target").get<std::vector<float>>().data());
-}
-
-void from_json(const json &j, std::shared_ptr<Camera> &c) {
-  c = std::make_shared<Camera>();
-
-  j.at("id").get_to(c->id);
-  j.at("type").get_to(c->type);
-  j.at("fov").get_to(c->fov);
-  j.at("aspect").get_to(c->aspect);
-  j.at("distance").get_to(c->distance);
-  c->position = vec3f(j.at("position").get<std::vector<float>>().data());
-  c->target = vec3f(j.at("target").get<std::vector<float>>().data());
-}
+void from_json(const json &j, Camera &c);
+void from_json(const json &j, std::shared_ptr<Camera> &c);

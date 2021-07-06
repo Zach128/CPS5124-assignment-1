@@ -5,24 +5,19 @@
 
 using json = nlohmann::json;
 
-struct Shape : TypedElement {
+// Forward declare visitor class
+class Renderer;
+
+class Shape : public TypedElement {
+public:
     vec3f position;
 
     Shape(const std::string &id, const std::string &type, const vec3f &position) : TypedElement(id, type), position(position) {}
-
     Shape() {}
+    ~Shape() {}
+
+    virtual bool renderer_ray_intersect(const Renderer &, float &t0) const { t0 = 0; return false; }
 };
 
-void from_json(const json &j, Shape &s) {
-    j.at("id").get_to(s.id);
-    j.at("type").get_to(s.type);
-    s.position = vec3f(j.at("centre").get<std::vector<float>>().data());
-}
-
-void from_json(const json &j, std::shared_ptr<Shape> &s) {
-    s = std::make_shared<Shape>();
-
-    j.at("id").get_to(s->id);
-    j.at("type").get_to(s->type);
-    s->position = vec3f(j.at("centre").get<std::vector<float>>().data());
-}
+void from_json(const json &j, Shape &s);
+void from_json(const json &j, std::shared_ptr<Shape> &s);

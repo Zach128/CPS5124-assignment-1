@@ -5,25 +5,17 @@
 
 using json = nlohmann::json;
 
+class Renderer;
+
 struct DiffuseMaterial : Material {
     vec3f rho;
 
     DiffuseMaterial(const std::string &id, const vec3f &rho) : Material(id, "diffuse"), rho(rho) {}
     
     DiffuseMaterial() {}
+
+    vec3f renderer_get_colour(Renderer &renderer);
 };
 
-void from_json(const json &j, DiffuseMaterial &d) {
-    nlohmann::from_json(j, static_cast<Material &>(d));
-
-    d.rho = vec3f(j.at("rho").get<std::vector<float>>().data());
-}
-
-void from_json(const json &j, std::shared_ptr<DiffuseMaterial> &d) {
-    d = std::make_shared<DiffuseMaterial>();
-    
-    j.at("id").get_to(d->id);
-    j.at("type").get_to(d->type);
-
-    d->rho = vec3f(j.at("rho").get<std::vector<float>>().data());
-}
+void from_json(const json &j, DiffuseMaterial &d);
+void from_json(const json &j, std::shared_ptr<DiffuseMaterial> &d);
