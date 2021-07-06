@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <algorithm>
 
 #include "models/scene.hpp"
 #include "utils/vec.hpp"
@@ -21,6 +22,7 @@ void WhittedRenderer::prepare(const Scene &scene) {
 
     primitives = scene.primitives;
     framebuffer = std::vector<vec3f>(width * height);
+    depthbuffer = std::vector<float>(width * height);
 }
 
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
@@ -36,6 +38,8 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
             framebuffer[curr_x + curr_y * width] = camera->renderer_cast_ray(*this);
         }
     }
+
+    depth_to_frame();
 }
 
 vec3f WhittedRenderer::cast_ray(PinholeCamera &camera) {
@@ -47,18 +51,36 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera) {
     // Compute the camera origin and facing direction.
     curr_dir = vec3f(dir_x, dir_y, dir_z).normalize();
 
-    float sphere_dist = std::numeric_limits<float>::max();
+    // Get a pointer to the current pixel's depth buffer.
+    float &sphere_dist = depthbuffer[curr_x + curr_y * width];
 
     // Iterate over the entire list of primitives, checking which one is hit by the ray.
     for(const std::shared_ptr<Primitive> &primitive : primitives) {
-        // If we hit one, return its colour
         if(primitive->shape->renderer_ray_intersect(*this, sphere_dist)) {
+            // Save the depth of the sphere.
+            depthbuffer[curr_x + curr_y * width] = sphere_dist;
+
+            // If we hit one, return its colour.
             return primitive->material->renderer_get_colour(*this);
         }
     }
 
+    depthbuffer[curr_x + curr_y * width] = sphere_dist;
+
     // Else, return the environment colour.
     return vec3f(0.2, 0.7, 0.8);
+}
+
+void WhittedRenderer::depth_to_frame() {
+    for (curr_y = 0; curr_y < height; curr_y++) {
+        for(curr_x = 0; curr_x < width; curr_x++) {
+            float &curr_pixel = depthbuffer[curr_x + curr_y * width];
+
+            curr_pixel = 1 - curr_pixel / (1 + curr_pixel);
+
+            framebuffer[curr_x + curr_y * width] = vec3f(curr_pixel, curr_pixel, curr_pixel);
+        }
+    }
 }
 
 bool WhittedRenderer::ray_intersect(const Sphere &sphere, float &t0) const {
