@@ -16,7 +16,7 @@ public:
     Shape() {}
     ~Shape() {}
 
-    virtual bool renderer_ray_intersect(const Renderer &, float &t0) const { t0 = 0; return false; }
+    virtual bool renderer_ray_intersect(const Renderer &, const vec3f &, const vec3f &, float &t0) const { t0 = 0; return false; }
 };
 
 void from_json(const json &j, Shape &s);

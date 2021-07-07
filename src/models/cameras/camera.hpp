@@ -27,7 +27,7 @@ struct Camera : TypedElement {
     
     Camera() : TypedElement() {}
 
-    virtual vec3f renderer_cast_ray(Renderer &) { return vec3f(0, 0, 0); };
+    virtual vec3f renderer_cast_ray(Renderer &, const vec2i &) { return vec3f(0, 0, 0); };
 };
 
 void from_json(const json &j, Camera &c);

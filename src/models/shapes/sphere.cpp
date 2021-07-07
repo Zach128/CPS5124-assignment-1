@@ -3,8 +3,8 @@
 
 #include "sphere.hpp"
 
-bool Sphere::renderer_ray_intersect(const Renderer &renderer, float &t0) const {
-    return renderer.ray_intersect(*this, t0);
+bool Sphere::renderer_ray_intersect(const Renderer &renderer, const vec3f &orig, const vec3f &dir, float &t0) const {
+    return renderer.ray_intersect(*this, orig, dir, t0);
 }
 
 void from_json(const json &j, Sphere &s) {

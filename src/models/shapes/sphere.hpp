@@ -16,7 +16,7 @@ public:
     Sphere() : Shape() {}
     ~Sphere() {}
 
-    virtual bool renderer_ray_intersect(const Renderer &, float &t0) const;
+    virtual bool renderer_ray_intersect(const Renderer &, const vec3f &orig, const vec3f &dir, float &t0) const;
 };
 
 void from_json(const json &j, Sphere &s);
