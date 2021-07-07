@@ -23,8 +23,8 @@ public:
 
     void depth_to_frame();
 
-    vec3f cast_ray(PinholeCamera &camera);
-    bool ray_intersect(const Sphere &sphere, float &t0) const;
+    vec3f cast_ray(PinholeCamera &camera, const vec2i &frame_coords);
+    bool ray_intersect(const Sphere &sphere, const vec3f &orig, const vec3f &dir, float &t0) const;
     vec3f get_diffuse(const DiffuseMaterial &mat);
 };
 
