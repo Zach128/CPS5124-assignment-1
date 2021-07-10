@@ -7,7 +7,7 @@ int main() {
     SceneLoader loader = SceneLoader();
     Scene s;
 
-    loader.LoadSceneFile("assignment_01.json", s);
+    loader.LoadSceneFile("assignment_02.json", s);
     
     s.prepare();
     s.render();

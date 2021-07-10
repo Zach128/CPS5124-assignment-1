@@ -24,6 +24,7 @@ public:
     void depth_to_frame();
 
     vec3f cast_ray(PinholeCamera &camera, const vec2i &frame_coords);
+    bool scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material);
     bool ray_intersect(const Sphere &sphere, const vec3f &orig, const vec3f &dir, float &t0) const;
     vec3f get_diffuse(const DiffuseMaterial &mat);
 };
