@@ -5,6 +5,8 @@
 
 #include "models/scene.hpp"
 #include "utils/vec.hpp"
+#include "utils/utils.hpp"
+#include "utils/mat.hpp"
 #include "models/cameras/camera.hpp"
 #include "models/cameras/pinhole.hpp"
 #include "models/shapes/sphere.hpp"
@@ -12,7 +14,8 @@
 
 #include "whitted-renderer.hpp"
 
-const static int fov = M_PI/2.;
+static Matrix44f cameraToWorld;
+static float scale;
 static std::vector<std::shared_ptr<Primitive>> primitives;
 
 void WhittedRenderer::prepare(const Scene &scene) {
@@ -26,13 +29,16 @@ void WhittedRenderer::prepare(const Scene &scene) {
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
 
+    // Get a camera-to-world matrix for the camera's location and orientation.
+    cameraToWorld = lookAt(camera->position, camera->target);
+    // Calculate the 'spread factor' for the generated rays.
+    scale = tan(DEG_RAD(camera->fov * 0.5));
+
     for (int curr_y = 0; curr_y < height; curr_y++) {
         for(int curr_x = 0; curr_x < width; curr_x++) {
             framebuffer[curr_x + curr_y * width] = camera->renderer_cast_ray(*this, vec2i(curr_x, curr_y));
         }
     }
-
-    // depth_to_frame();
 }
             
 bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material) {
@@ -58,22 +64,24 @@ bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f
 vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords) {
     const int &x = frame_coords.x, &y = frame_coords.y;
 
-    vec3f hit, N;
+    vec3f hit, N, dir;
     std::shared_ptr<Material> material;
 
     // Generate direction coordinates for the given ray.
-    float dir_x = (x + 0.5) - width / 2.;
-    float dir_y = -(y + 0.5) + height / 2.;
-    float dir_z = -height / (2. * tan(camera.fov / 2.));
+    float dir_x = -(2. * (x + .5) / width - 1) * camera.aspect * scale;
+    float dir_y = (1 - 2 * (y + .5) / height) * scale;
+    float dir_z = -1;
 
     // Compute the camera origin and facing direction.
-    const vec3f dir = vec3f(dir_x, dir_y, dir_z).normalize();
+    cameraToWorld.multDirMatrix(vec3f(dir_x, dir_y, dir_z), dir);
+    dir = dir.normalize();
 
     // Get a pointer to the current pixel's depth buffer.
     float &sphere_dist = depthbuffer[x + y * width];
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
     if(!scene_intersect(camera.position, dir, hit, N, sphere_dist, material)) {
+        // If nothing was hit, set the distance to be the clipping distance.
             depthbuffer[x + y * width] = sphere_dist;
 
         // If we didn't hit anything, return only the background colour.
@@ -111,8 +119,8 @@ bool WhittedRenderer::ray_intersect(const Sphere &sphere, const vec3f &orig, con
     t0 = tca - thc;
     float t1 = tca + thc;
 
-    if (t0 < 0) t0 = t1;
-    if (t0 < 0) return false;
+    if (t0 < 1e-3) t0 = t1;
+    if (t0 < 1e-3) return false;
 
     return true;
 }
