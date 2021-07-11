@@ -16,6 +16,7 @@
 
 #include "whitted-renderer.hpp"
 
+#define MAX_RAY_DEPTH 20
 #define SPEC_SHINE 16
 #define SPEC_ALBEDO 0.3
 
@@ -39,25 +40,50 @@ void WhittedRenderer::prepare(const Scene &scene) {
 
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
+    vec3f dir;
+    float dir_x, dir_y, dir_z;
 
     // Get a camera-to-world matrix for the camera's location and orientation.
     cameraToWorld = lookAt(camera->position, camera->target);
     // Calculate the 'spread factor' for the generated rays.
     scale = tan(DEG_RAD(camera->fov * 0.5));
 
-    for (int curr_y = 0; curr_y < height; curr_y++) {
-        for(int curr_x = 0; curr_x < width; curr_x++) {
-            framebuffer[curr_x + curr_y * width] = camera->renderer_cast_ray(*this, vec2i(curr_x, curr_y));
+    for (int y = 0; y < height; y++) {
+        for(int x = 0; x < width; x++) {
+            dir_x = -(2. * (x + .5) / width - 1) * camera->aspect * scale;
+            dir_y = (1 - 2 * (y + .5) / height) * scale;
+            dir_z = -1;
+
+            // Compute the camera origin and facing direction.
+            cameraToWorld.multDirMatrix(vec3f(dir_x, dir_y, dir_z), dir);
+            dir = dir.normalize();
+
+            framebuffer[x + y * width] = camera->renderer_cast_ray(*this, camera->position, dir, depthbuffer[x + y * width]);
         }
     }
 }
 
-void compute_diffuse_intensity(const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
+void WhittedRenderer::compute_diffuse_intensity(const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
     vec3f intensity(0, 0, 0);
 
     // Calculate diffuse lighting from each light source.
     for (size_t i = 0; i < lights.size(); i++) {
         vec3f light_dir = (lights[i]->position - hit).normalize();
+        float light_distance = (lights[i]->position - hit).norm();
+
+        // Calculate shadows.
+        // Offset the point to ensure it doesn't accidentally hit the same shape.
+        vec3f shadow_orig = light_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+        // Temp variables.
+        vec3f shadow_hit, shadow_N;
+        float shadow_dist;
+        std::shared_ptr<Material> tmpmaterial;
+
+        // Check if a ray from this point to the current light is obscured by another object. If so, skip this light.
+        if (scene_intersect(shadow_orig, light_dir, shadow_hit, shadow_N, shadow_dist, tmpmaterial) && (shadow_hit - shadow_orig).norm() < light_distance)
+            continue;
+
+        // Compute the specular intensity for this given light.
         intensity = intensity + lights[i]->intensity * std::max(0.f, light_dir * N);
     }
 
@@ -67,7 +93,7 @@ void compute_diffuse_intensity(const vec3f &hit, const vec3f &N, const vec3f &in
     out.z += in_color.z * intensity.z;
 }
 
-void compute_specular_intensity(const vec3f &dir, const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
+void WhittedRenderer::compute_specular_intensity(const vec3f &dir, const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
     vec3f intensity(0, 0, 0);
 
     for (size_t i = 0; i < lights.size(); i++) {
@@ -107,39 +133,38 @@ bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f
     return dist < 1000;
 }
 
-vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords) {
-    const int &x = frame_coords.x, &y = frame_coords.y;
-
-    vec3f hit, N, dir;
+vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec3f &orig, const vec3f &dir, float &dist, size_t depth = 0) {
+    vec3f hit, N;
     std::shared_ptr<Material> material;
     vec3f total_color, diffuse_intensity;
 
-    // Generate direction coordinates the new ray.
-    float dir_x = -(2. * (x + .5) / width - 1) * camera.aspect * scale;
-    float dir_y = (1 - 2 * (y + .5) / height) * scale;
-    float dir_z = -1;
-
-    // Compute the camera origin and facing direction.
-    cameraToWorld.multDirMatrix(vec3f(dir_x, dir_y, dir_z), dir);
-    dir = dir.normalize();
-
-    // Get a pointer to the current pixel's depth buffer.
-    float &sphere_dist = depthbuffer[x + y * width];
-
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
-    if(!scene_intersect(camera.position, dir, hit, N, sphere_dist, material)) {
-        // If nothing was hit, set the distance to be the clipping distance.
-        depthbuffer[x + y * width] = sphere_dist;
+    if(depth > MAX_RAY_DEPTH || !scene_intersect(orig, dir, hit, N, dist, material)) {
 
         // If we didn't hit anything, return only the background colour.
         return vec3f(0.2, 0.7, 0.8);
     }
 
     // Record the depth value as an inverse reciprocal of the actual distance.
-    depthbuffer[x + y * width] = 1 - sphere_dist / (1 + sphere_dist);
+    dist = 1 - dist / (1 + dist);
 
     compute_diffuse_intensity(hit, N, material->get_diffuse(*this), total_color);
+
+    // If the material is specular, calculate it's specular highlights.
     if (material->type == "specular reflection") compute_specular_intensity(dir, hit, N, material->get_specular((*this)), total_color);
+
+    if (material->type == "glossy reflection") {
+        // If the material is glossy, also calculate the highlights.
+        compute_specular_intensity(dir, hit, N, material->get_specular((*this)), total_color);
+
+        // Cast a reflection off the shape to determine the reflection.
+        float reflect_dist;
+        vec3f reflect_dir = reflect(dir, N).normalize();
+        vec3f reflect_orig = reflect_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+        vec3f reflect_color = cast_ray(camera, reflect_orig, reflect_dir, reflect_dist, depth + 1);
+
+        total_color = total_color + reflect_color * (1 - material->get_roughness());
+    }
 
     return total_color;
 }

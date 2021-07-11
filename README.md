@@ -20,6 +20,8 @@ Source code for my CPS5124 study unit assignment.
     - [x] Specular reflective.
     - [ ] Specular transmissive surfaces.
     - [ ] Pinhole camera with box linear filter.
+        - [ ] Linear tone mapper.
+        - [ ] Sigmoid tone mapper.
 - [ ] Implement tone mappers.
     - [ ] Sigmoid tone mapper.
     - [ ] Linear tone mapper.

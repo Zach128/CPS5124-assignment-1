@@ -3,11 +3,11 @@
 
 #include "specular.hpp"
 
-vec3f SpecularMaterial::get_diffuse(Renderer &renderer) {
+vec3f SpecularMaterial::get_diffuse(Renderer &) {
     return rho;
 }
 
-vec3f SpecularMaterial::get_specular(Renderer &renderer) {
+vec3f SpecularMaterial::get_specular(Renderer &) {
     return rho;
 }
 

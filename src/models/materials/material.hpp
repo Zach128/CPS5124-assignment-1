@@ -16,6 +16,7 @@ struct Material : TypedElement {
 
     virtual vec3f get_diffuse(Renderer &) { return vec3f(0, 0, 0); };
     virtual vec3f get_specular(Renderer &) { return vec3f(0, 0, 0); };
+    virtual float get_roughness() { return 1; }
 };
 
 void from_json(const json &j, Material &m);
