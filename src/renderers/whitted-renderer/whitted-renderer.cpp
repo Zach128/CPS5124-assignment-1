@@ -10,17 +10,21 @@
 #include "models/cameras/camera.hpp"
 #include "models/cameras/pinhole.hpp"
 #include "models/shapes/sphere.hpp"
+#include "models/lights/light.hpp"
+#include "models/lights/point-light.hpp"
 #include "models/primitive.hpp"
 
 #include "whitted-renderer.hpp"
 
 static Matrix44f cameraToWorld;
 static float scale;
+static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
 
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
+    lights = scene.lights;
     primitives = scene.primitives;
     framebuffer = std::vector<vec3f>(width * height);
     depthbuffer = std::vector<float>(width * height);
@@ -39,6 +43,21 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
             framebuffer[curr_x + curr_y * width] = camera->renderer_cast_ray(*this, vec2i(curr_x, curr_y));
         }
     }
+}
+
+void compute_diffuse_intensity(const vec3f &hit, const vec3f &N, vec3f &out) {
+    vec3f intensity(0, 0, 0);
+
+    // Calculate diffuse lighting
+    for (size_t i = 0; i < lights.size(); i++) {
+        vec3f light_dir = (lights[i]->position - hit).normalize();
+        intensity = intensity + lights[i]->intensity * std::max(0.f, light_dir * N);
+    }
+
+    // Apply the intensity to the output vector.
+    out.x *= intensity.x;
+    out.y *= intensity.y;
+    out.z *= intensity.z;
 }
 
 bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material) {
@@ -66,6 +85,7 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords
 
     vec3f hit, N, dir;
     std::shared_ptr<Material> material;
+    vec3f total_color, diffuse_intensity;
 
     // Generate direction coordinates the new ray.
     float dir_x = -(2. * (x + .5) / width - 1) * camera.aspect * scale;
@@ -91,7 +111,11 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords
     // Record the depth value as an inverse reciprocal of the actual distance.
     depthbuffer[x + y * width] = 1 - sphere_dist / (1 + sphere_dist);
 
-    return material->renderer_get_colour(*this);
+    total_color = material->get_diffuse(*this);
+
+    compute_diffuse_intensity(hit, N, total_color);
+
+    return total_color;
 }
 
 bool WhittedRenderer::ray_intersect(const Sphere &sphere, const vec3f &orig, const vec3f &dir, float &t0) const {

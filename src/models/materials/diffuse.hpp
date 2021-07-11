@@ -11,10 +11,10 @@ struct DiffuseMaterial : Material {
     vec3f rho;
 
     DiffuseMaterial(const std::string &id, const vec3f &rho) : Material(id, "diffuse"), rho(rho) {}
-    
+
     DiffuseMaterial() {}
 
-    vec3f renderer_get_colour(Renderer &renderer);
+    vec3f get_diffuse(Renderer &renderer);
 };
 
 void from_json(const json &j, DiffuseMaterial &d);
