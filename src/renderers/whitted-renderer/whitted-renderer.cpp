@@ -170,9 +170,9 @@ void WhittedRenderer::save_depth() {
     ofs << "P6\n" << width << " " << height << "\n255\n";
 
     for (int i = 0; i < width * height; i++) {
-        ofs << (char)(255 * std::max(0.f, std::min(1.f, depthbuffer[i])));
-        ofs << (char)(255 * std::max(0.f, std::min(1.f, depthbuffer[i])));
-        ofs << (char)(255 * std::max(0.f, std::min(1.f, depthbuffer[i])));
+        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
+        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
+        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
     }
 
     ofs.close();
