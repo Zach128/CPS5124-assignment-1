@@ -40,7 +40,7 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
         }
     }
 }
-            
+
 bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material) {
     dist = std::numeric_limits<float>::max();
 
@@ -67,7 +67,7 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords
     vec3f hit, N, dir;
     std::shared_ptr<Material> material;
 
-    // Generate direction coordinates for the given ray.
+    // Generate direction coordinates the new ray.
     float dir_x = -(2. * (x + .5) / width - 1) * camera.aspect * scale;
     float dir_y = (1 - 2 * (y + .5) / height) * scale;
     float dir_z = -1;
@@ -82,29 +82,16 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
     if(!scene_intersect(camera.position, dir, hit, N, sphere_dist, material)) {
         // If nothing was hit, set the distance to be the clipping distance.
-            depthbuffer[x + y * width] = sphere_dist;
+        depthbuffer[x + y * width] = sphere_dist;
 
         // If we didn't hit anything, return only the background colour.
         return vec3f(0.2, 0.7, 0.8);
     }
 
-    depthbuffer[x + y * width] = sphere_dist;
+    // Record the depth value as an inverse reciprocal of the actual distance.
+    depthbuffer[x + y * width] = 1 - sphere_dist / (1 + sphere_dist);
 
     return material->renderer_get_colour(*this);
-}
-
-void WhittedRenderer::depth_to_frame() {
-    for (int y = 0; y < height; y++) {
-        for(int x = 0; x < width; x++) {
-            // Get the current pixel.
-            float &curr_pixel = depthbuffer[x + y * width];
-
-            // Post-process the pixel using an inserse exponential function.
-            curr_pixel = 1 - curr_pixel / (1 + curr_pixel);
-            
-            framebuffer[x + y * width] = vec3f(curr_pixel, curr_pixel, curr_pixel);
-        }
-    }
 }
 
 bool WhittedRenderer::ray_intersect(const Sphere &sphere, const vec3f &orig, const vec3f &dir, float &t0) const {
@@ -141,6 +128,27 @@ void WhittedRenderer::save() {
         ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i].x)));
         ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i].y)));
         ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i].z)));
+    }
+
+    ofs.close();
+
+    std::cout << "Done" << std::endl;
+
+    save_depth();
+}
+
+void WhittedRenderer::save_depth() {
+    std::cout << "Saving depth buffer..." << std::endl;
+
+    std::ofstream ofs;
+
+    ofs.open("./out-depth.ppm");
+    ofs << "P6\n" << width << " " << height << "\n255\n";
+
+    for (int i = 0; i < width * height; i++) {
+        ofs << (char)(255 * std::max(0.f, std::min(1.f, depthbuffer[i])));
+        ofs << (char)(255 * std::max(0.f, std::min(1.f, depthbuffer[i])));
+        ofs << (char)(255 * std::max(0.f, std::min(1.f, depthbuffer[i])));
     }
 
     ofs.close();
