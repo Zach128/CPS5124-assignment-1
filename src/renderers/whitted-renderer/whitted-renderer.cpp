@@ -16,10 +16,17 @@
 
 #include "whitted-renderer.hpp"
 
+#define SPEC_SHINE 16
+#define SPEC_ALBEDO 0.3
+
 static Matrix44f cameraToWorld;
 static float scale;
 static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
+
+vec3f reflect(const vec3f &I, const vec3f &N) {
+    return I - N * 2.f * (I * N);
+}
 
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
@@ -45,19 +52,39 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     }
 }
 
-void compute_diffuse_intensity(const vec3f &hit, const vec3f &N, vec3f &out) {
+void compute_diffuse_intensity(const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
     vec3f intensity(0, 0, 0);
 
-    // Calculate diffuse lighting
+    // Calculate diffuse lighting from each light source.
     for (size_t i = 0; i < lights.size(); i++) {
         vec3f light_dir = (lights[i]->position - hit).normalize();
         intensity = intensity + lights[i]->intensity * std::max(0.f, light_dir * N);
     }
 
     // Apply the intensity to the output vector.
-    out.x *= intensity.x;
-    out.y *= intensity.y;
-    out.z *= intensity.z;
+    out.x += in_color.x * intensity.x;
+    out.y += in_color.y * intensity.y;
+    out.z += in_color.z * intensity.z;
+}
+
+void compute_specular_intensity(const vec3f &dir, const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
+    vec3f intensity(0, 0, 0);
+
+    for (size_t i = 0; i < lights.size(); i++) {
+        vec3f light_dir = (lights[i]->position - hit).normalize();
+        // Calculate the reflected ray intensity.
+        float ray_intensity = std::max(0.f, reflect(light_dir, N) * dir);
+
+        // Calculate the shine intensity for each component color.
+        intensity.x += powf(ray_intensity, SPEC_SHINE) * lights[i]->intensity.x;
+        intensity.y += powf(ray_intensity, SPEC_SHINE) * lights[i]->intensity.y;
+        intensity.z += powf(ray_intensity, SPEC_SHINE) * lights[i]->intensity.z;
+    }
+
+    // Add the new colour to the output.
+    out.x += in_color.x + intensity.x * SPEC_ALBEDO;
+    out.y += in_color.y + intensity.y * SPEC_ALBEDO;
+    out.z += in_color.z + intensity.z * SPEC_ALBEDO;
 }
 
 bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material) {
@@ -111,9 +138,8 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec2i &frame_coords
     // Record the depth value as an inverse reciprocal of the actual distance.
     depthbuffer[x + y * width] = 1 - sphere_dist / (1 + sphere_dist);
 
-    total_color = material->get_diffuse(*this);
-
-    compute_diffuse_intensity(hit, N, total_color);
+    compute_diffuse_intensity(hit, N, material->get_diffuse(*this), total_color);
+    if (material->type == "specular reflection") compute_specular_intensity(dir, hit, N, material->get_specular((*this)), total_color);
 
     return total_color;
 }
@@ -149,9 +175,9 @@ void WhittedRenderer::save() {
     ofs << "P6\n" << width << " " << height << "\n255\n";
 
     for (int i = 0; i < width * height; i++) {
-        ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i].x)));
-        ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i].y)));
-        ofs << (char)(255 * std::max(0.f, std::min(1.f, framebuffer[i].z)));
+        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].x)));
+        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].y)));
+        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].z)));
     }
 
     ofs.close();

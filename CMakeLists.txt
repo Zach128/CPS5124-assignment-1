@@ -31,6 +31,7 @@ file(
     "${SRC_DIR}/*.hpp"
     "${SRC_DIR}/*.cpp"
     "${SRC_DIR}/models/materials/diffuse.cpp"
+    "${SRC_DIR}/models/materials/specular.cpp"
     "${SRC_DIR}/models/materials/material.cpp"
     "${SRC_DIR}/models/shapes/shape.cpp"
     "${SRC_DIR}/models/shapes/sphere.cpp"
