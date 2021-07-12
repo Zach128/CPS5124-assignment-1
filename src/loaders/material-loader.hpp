@@ -6,6 +6,7 @@
 #include "models/materials/diffuse.hpp"
 #include "models/materials/specular.hpp"
 #include "models/materials/glossy.hpp"
+#include "models/materials/fresnel.hpp"
 
 using json = nlohmann::json;
 
@@ -20,6 +21,8 @@ void LoadMaterials(const json &j, std::vector<std::shared_ptr<Material>> &materi
                 materials.push_back(mat.get<std::shared_ptr<SpecularMaterial>>());
             } else if (mat.at("type") == "glossy reflection") {
                 materials.push_back(mat.get<std::shared_ptr<GlossyMaterial>>());
+            } else if (mat.at("type") == "fresnel dielectric") {
+                materials.push_back(mat.get<std::shared_ptr<FresnelMaterial>>());
             } else {
                 materials.push_back(mat.get<std::shared_ptr<Material>>());
             }

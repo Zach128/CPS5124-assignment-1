@@ -19,7 +19,10 @@
 #define MAX_RAY_DEPTH 20
 #define SPEC_SHINE 16
 #define SPEC_ALBEDO 0.3
+#define GLOSS_ALBEDO 0.8
+#define FRES_ALBEDO 0.8
 
+static size_t max_depth = MAX_RAY_DEPTH;
 static Matrix44f cameraToWorld;
 static float scale;
 static std::vector<std::shared_ptr<Light>> lights;
@@ -29,11 +32,57 @@ vec3f reflect(const vec3f &I, const vec3f &N) {
     return I - N * 2.f * (I * N);
 }
 
+vec3f refract(const vec3f &I, const vec3f &N, const float &refractive_index) {
+    //Snell's law
+    float cosi = -std::max(-1.f, std::min(1.f, I*N));
+    float etai = 1, etat = refractive_index;
+    vec3f n = N;
+
+    // Ensure the ray is outside the object, swapping the indices and inverting the normal if it is inside the object.
+    if (cosi < 0) {
+        cosi = -cosi;
+        std::swap(etai, etat);
+        n = -N;
+    }
+
+    float eta = etai / etat;
+    float k = 1 - eta * eta * (1 - cosi * cosi);
+
+    return k < 0 ? vec3f(1, 0, 0) : I * eta + n * (eta * cosi - sqrtf(k));
+}
+
+float fresnel(const vec3f &I, const vec3f &N, const float &refractive_index, float &kr)
+{
+    float cosi = std::max(-1.f, std::min(1.f, I * N));
+    float etai = 1, etat = refractive_index;
+
+    if (cosi > 0) { std::swap(etai, etat); }
+
+    // Compute sini using Snell's law
+    float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
+
+    // Total internal reflection
+    if (sint >= 1) {
+        kr = 1;
+    }
+    else {
+        float cost = sqrtf(std::max(0.f, 1 - sint * sint));
+        cosi = fabsf(cosi);
+        float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+        float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+        kr = (Rs * Rs + Rp * Rp) / 2;
+    }
+
+    return 1 - kr;
+}
+
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
     lights = scene.lights;
     primitives = scene.primitives;
+    max_depth = std::min(max_depth, depth);
+
     framebuffer = std::vector<vec3f>(width * height);
     depthbuffer = std::vector<float>(width * height);
 }
@@ -46,15 +95,16 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     // Get a camera-to-world matrix for the camera's location and orientation.
     cameraToWorld = lookAt(camera->position, camera->target);
     // Calculate the 'spread factor' for the generated rays.
-    scale = tan(DEG_RAD(camera->fov * 0.5));
+    scale = camera->aspect * tan(DEG_RAD(camera->fov * 0.5));
 
     for (int y = 0; y < height; y++) {
         for(int x = 0; x < width; x++) {
-            dir_x = -(2. * (x + .5) / width - 1) * camera->aspect * scale;
+            // Calculate the ray direction of the current pixel in the framebuffer.
+            dir_x = -(2. * (x + .5) / width - 1) * scale;
             dir_y = (1 - 2 * (y + .5) / height) * scale;
             dir_z = -1;
 
-            // Compute the camera origin and facing direction.
+            // Convert the ray direction to world space to obtain the true coordinates.
             cameraToWorld.multDirMatrix(vec3f(dir_x, dir_y, dir_z), dir);
             dir = dir.normalize();
 
@@ -113,6 +163,44 @@ void WhittedRenderer::compute_specular_intensity(const vec3f &dir, const vec3f &
     out.z += in_color.z + intensity.z * SPEC_ALBEDO;
 }
 
+void WhittedRenderer::compute_glossy(const PinholeCamera &camera, const vec3f &dir, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
+    // If the material is glossy, also calculate the highlights.
+    compute_specular_intensity(dir, hit, N, material->get_specular((*this)), out);
+
+    // Cast a reflection off the shape to determine the reflection.
+    float reflect_dist;
+    vec3f reflect_dir = reflect(dir, N).normalize();
+    vec3f reflect_orig = reflect_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+    vec3f reflect_color = cast_ray(camera, reflect_orig, reflect_dir, reflect_dist, depth + 1);
+
+    out = out + reflect_color * (1 - material->get_roughness());
+}
+
+void WhittedRenderer::compute_fresnel(const PinholeCamera &camera, const vec3f &dir, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
+    vec3f refract_color, reflect_color;
+    float kr, kt;
+
+    kt = fresnel(dir, N, material->get_eta(), kr);
+
+    // If the light is not completely reflected, simulate transmission.
+    if (kr < 1) {
+        // Simulate transmission.
+        float refract_dist;
+        vec3f refract_dir = refract(dir, N, material->get_eta()).normalize();
+        vec3f refract_orig = refract_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+        refract_color = cast_ray(camera, refract_orig, refract_dir, refract_dist, depth + 1);
+    }
+
+    // Simulate reflection.
+    float reflect_dist;
+    vec3f reflect_dir = reflect(dir, N).normalize();
+    vec3f reflect_orig = reflect_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+    reflect_color = cast_ray(camera, reflect_orig, reflect_dir, reflect_dist, depth + 1);
+
+    // Apply the new colours, multiplying by the ratio of light reflected to transmitted.
+    out = out + refract_color * kt + reflect_color * kr;
+}
+
 bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material) {
     dist = std::numeric_limits<float>::max();
 
@@ -133,13 +221,13 @@ bool WhittedRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f
     return dist < 1000;
 }
 
-vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec3f &orig, const vec3f &dir, float &dist, size_t depth = 0) {
+vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const vec3f &orig, const vec3f &dir, float &dist, size_t depth = 0) {
     vec3f hit, N;
     std::shared_ptr<Material> material;
     vec3f total_color, diffuse_intensity;
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
-    if(depth > MAX_RAY_DEPTH || !scene_intersect(orig, dir, hit, N, dist, material)) {
+    if(depth > max_depth || !scene_intersect(orig, dir, hit, N, dist, material)) {
 
         // If we didn't hit anything, return only the background colour.
         return vec3f(0.2, 0.7, 0.8);
@@ -153,18 +241,9 @@ vec3f WhittedRenderer::cast_ray(PinholeCamera &camera, const vec3f &orig, const 
     // If the material is specular, calculate it's specular highlights.
     if (material->type == "specular reflection") compute_specular_intensity(dir, hit, N, material->get_specular((*this)), total_color);
 
-    if (material->type == "glossy reflection") {
-        // If the material is glossy, also calculate the highlights.
-        compute_specular_intensity(dir, hit, N, material->get_specular((*this)), total_color);
+    if (material->type == "glossy reflection") compute_glossy(camera, dir, hit, N, material, depth, total_color);
 
-        // Cast a reflection off the shape to determine the reflection.
-        float reflect_dist;
-        vec3f reflect_dir = reflect(dir, N).normalize();
-        vec3f reflect_orig = reflect_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
-        vec3f reflect_color = cast_ray(camera, reflect_orig, reflect_dir, reflect_dist, depth + 1);
-
-        total_color = total_color + reflect_color * (1 - material->get_roughness());
-    }
+    if (material->type == "fresnel dielectric") compute_fresnel(camera, dir, hit, N, material, depth, total_color);
 
     return total_color;
 }
