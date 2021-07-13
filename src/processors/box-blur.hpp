@@ -51,9 +51,7 @@ public:
                 vec3f new_color = std::reduce(std::cbegin(buffer), std::cend(buffer));
 
                 // Average them.
-                new_color.x /= 9.f;
-                new_color.y /= 9.f;
-                new_color.z /= 9.f;
+                new_color = new_color / 9.f;
 
                 framebuffer[x + y * width] = new_color;
             }
