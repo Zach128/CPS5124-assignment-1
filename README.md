@@ -14,12 +14,12 @@ Source code for my CPS5124 study unit assignment.
 
 ### Task 2
 
-- [ ] Create a whitted-style ray tracer.
+- [x] Create a whitted-style ray tracer.
     - [x] Point lights.
     - [x] Diffuse surfaces.
     - [x] Specular reflective.
     - [x] Specular transmissive surfaces.
-    - [ ] Pinhole camera with box linear filter.
+    - [x] Pinhole camera with box linear filter.
 - [ ] Implement tone mappers.
     - [ ] Sigmoid tone mapper.
     - [ ] Linear tone mapper.

@@ -6,10 +6,6 @@
 #include "models/primitive.hpp"
 
 class WhittedRenderer : public Renderer {
-private:
-    std::vector<vec3f> framebuffer;
-    std::vector<float> depthbuffer;
-
 public:
     WhittedRenderer(const std::string &type, const std::string &output, const vec2i &dimensions, int samples, int depth)
         : Renderer(type, output, dimensions, samples, depth) {}

@@ -111,6 +111,8 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
             framebuffer[x + y * width] = camera->renderer_cast_ray(*this, camera->position, dir, depthbuffer[x + y * width]);
         }
     }
+
+    std::cout << "Done" << std::endl;
 }
 
 void WhittedRenderer::compute_diffuse_intensity(const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
@@ -228,7 +230,6 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const vec3f &orig, 
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
     if(depth > max_depth || !scene_intersect(orig, dir, hit, N, dist, material)) {
-
         // If we didn't hit anything, return only the background colour.
         return vec3f(0.2, 0.7, 0.8);
     }

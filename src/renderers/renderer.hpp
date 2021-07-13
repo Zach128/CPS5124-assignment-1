@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 #include "utils/vec.hpp"
@@ -24,6 +25,9 @@ public:
     int height;
     int samples;
     size_t depth;
+
+    std::vector<vec3f> framebuffer;
+    std::vector<float> depthbuffer;
 
     Renderer(const std::string &type, const std::string &output, const vec2i &dimensions, const int samples, const size_t depth) : type(type), output(output), width(dimensions.x), height(dimensions.y), samples(samples), depth(depth) {}
     Renderer() {}
