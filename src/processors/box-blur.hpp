@@ -47,13 +47,11 @@ public:
 				buffer[7] = framebuffer[indices[7]] * kernel[7]; // lower mid
 				buffer[8] = framebuffer[indices[8]] * kernel[8]; // lower right
 
-                // Combine the colours
-                vec3f new_color = std::reduce(std::cbegin(buffer), std::cend(buffer));
+                // Combine the colours and average them.
+                vec3f new_color;
+                for(int i = 9; i-- > 0; new_color = new_color + buffer[i]);
 
-                // Average them.
-                new_color = new_color / 9.f;
-
-                framebuffer[x + y * width] = new_color;
+                framebuffer[x + y * width] = new_color / 9.f;
             }
         }
 

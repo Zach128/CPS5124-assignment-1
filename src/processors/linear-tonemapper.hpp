@@ -9,7 +9,6 @@
 
 class LinearToneMapper : public PostProcessor {
 public:
-    const vec3f LUM_VECTOR = vec3f(0.2126f, 0.7152f, 0.0722f);
 
     LinearToneMapper(const size_t width, const size_t height): PostProcessor(width, height) {}
 
@@ -23,12 +22,15 @@ public:
 
         std::vector<float> frame_luminance = std::vector<float>(length);
 
+        // Scale down the colours to the range of 0..1.
         preScale(framebuffer, vec3f(1, 1, 1), bottom, min_color, max_color);
 
+        // Apply the sigmoidal function to each colour.
         for(size_t i = 0; i < length; i++) {
             framebuffer[i] = (framebuffer[i] / (max_color));
         }
 
+        // Scale back up to the original range (0..255).
         preScale(framebuffer, top, bottom, min_color, max_color);
 
         std::cout << "Done" << std::endl;
