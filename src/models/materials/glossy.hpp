@@ -15,8 +15,8 @@ struct GlossyMaterial : Material {
 
     GlossyMaterial() {}
 
-    vec3f get_diffuse(Renderer &renderer);
-    vec3f get_specular(Renderer &renderer);
+    vec3f get_diffuse();
+    vec3f get_specular();
     float get_roughness();
 };
 

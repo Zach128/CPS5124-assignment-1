@@ -16,8 +16,8 @@ struct FresnelMaterial : Material {
 
     FresnelMaterial() {}
 
-    vec3f get_diffuse(Renderer &renderer);
-    vec3f get_specular(Renderer &renderer);
+    vec3f get_diffuse();
+    vec3f get_specular();
     vec3f get_transmission();
     float get_eta();
 };

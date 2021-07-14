@@ -3,11 +3,11 @@
 
 #include "fresnel.hpp"
 
-vec3f FresnelMaterial::get_diffuse(Renderer &) {
+vec3f FresnelMaterial::get_diffuse() {
     return rhoR;
 }
 
-vec3f FresnelMaterial::get_specular(Renderer &) {
+vec3f FresnelMaterial::get_specular() {
     return rhoR;
 }
 

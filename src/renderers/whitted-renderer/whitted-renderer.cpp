@@ -28,54 +28,6 @@ static float scale;
 static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
 
-vec3f reflect(const vec3f &I, const vec3f &N) {
-    return I - N * 2.f * (I * N);
-}
-
-vec3f refract(const vec3f &I, const vec3f &N, const float &refractive_index) {
-    //Snell's law
-    float cosi = -std::max(-1.f, std::min(1.f, dot(I, N)));
-    float etai = 1, etat = refractive_index;
-    vec3f n = N;
-
-    // Ensure the ray is outside the object, swapping the indices and inverting the normal if it is inside the object.
-    if (cosi < 0) {
-        cosi = -cosi;
-        std::swap(etai, etat);
-        n = -N;
-    }
-
-    float eta = etai / etat;
-    float k = 1 - eta * eta * (1 - cosi * cosi);
-
-    return k < 0 ? vec3f(1, 0, 0) : I * eta + n * (eta * cosi - sqrtf(k));
-}
-
-float fresnel(const vec3f &I, const vec3f &N, const float &refractive_index, float &kr)
-{
-    float cosi = std::max(-1.f, std::min(1.f, dot(I, N)));
-    float etai = 1, etat = refractive_index;
-
-    if (cosi > 0) { std::swap(etai, etat); }
-
-    // Compute sini using Snell's law
-    float sint = etai / etat * sqrtf(std::max(0.f, 1 - cosi * cosi));
-
-    // Total internal reflection
-    if (sint >= 1) {
-        kr = 1;
-    }
-    else {
-        float cost = sqrtf(std::max(0.f, 1 - sint * sint));
-        cosi = fabsf(cosi);
-        float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
-        float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
-        kr = (Rs * Rs + Rp * Rp) / 2;
-    }
-
-    return 1 - kr;
-}
-
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
@@ -83,6 +35,7 @@ void WhittedRenderer::prepare(const Scene &scene) {
     primitives = scene.primitives;
     max_depth = std::min(max_depth, depth);
 
+    // Initialise frame buffers.
     framebuffer = std::vector<vec3f>(width * height);
     depthbuffer = std::vector<float>(width * height);
 }
@@ -161,7 +114,7 @@ void WhittedRenderer::compute_specular_intensity(const vec3f &dir, const vec3f &
 
 void WhittedRenderer::compute_glossy(const PinholeCamera &camera, const vec3f &dir, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
     // If the material is glossy, also calculate the highlights.
-    compute_specular_intensity(dir, hit, N, material->get_specular((*this)), out);
+    compute_specular_intensity(dir, hit, N, material->get_specular(), out);
 
     // Cast a reflection off the shape to determine the reflection.
     float reflect_dist;
@@ -229,16 +182,14 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const vec3f &orig, 
     }
 
     // Record the depth value as an inverse reciprocal of the actual distance.
-    dist = 1 - dist / (1 + dist);
+    dist = 1.f - dist / (1.f + dist);
 
-    compute_diffuse_intensity(hit, N, material->get_diffuse(*this), total_color);
+    compute_diffuse_intensity(hit, N, material->get_diffuse(), total_color);
 
     // If the material is specular, calculate it's specular highlights.
-    if (material->type == "specular reflection") compute_specular_intensity(dir, hit, N, material->get_specular((*this)), total_color);
-
-    if (material->type == "glossy reflection") compute_glossy(camera, dir, hit, N, material, depth, total_color);
-
-    if (material->type == "fresnel dielectric") compute_fresnel(camera, dir, hit, N, material, depth, total_color);
+    if (material->type == "specular reflection") compute_specular_intensity(dir, hit, N, material->get_specular(), total_color);
+    else if (material->type == "glossy reflection") compute_glossy(camera, dir, hit, N, material, depth, total_color);
+    else if (material->type == "fresnel dielectric") compute_fresnel(camera, dir, hit, N, material, depth, total_color);
 
     return total_color;
 }
@@ -259,50 +210,6 @@ bool WhittedRenderer::ray_intersect(const Sphere &sphere, const vec3f &orig, con
     if (t0 < 1e-3) return false;
 
     return true;
-}
-
-vec3f WhittedRenderer::get_diffuse(const DiffuseMaterial &mat) {
-    return mat.rho;
-}
-
-void WhittedRenderer::save() {
-    std::cout << "Saving final result..." << std::endl;
-
-    std::ofstream ofs;
-
-    ofs.open("./out.ppm");
-    ofs << "P6\n" << width << " " << height << "\n255\n";
-
-    for (int i = 0; i < width * height; i++) {
-        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].x)));
-        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].y)));
-        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].z)));
-    }
-
-    ofs.close();
-
-    std::cout << "Done" << std::endl;
-
-    save_depth();
-}
-
-void WhittedRenderer::save_depth() {
-    std::cout << "Saving depth buffer..." << std::endl;
-
-    std::ofstream ofs;
-
-    ofs.open("./out-depth.ppm");
-    ofs << "P6\n" << width << " " << height << "\n255\n";
-
-    for (int i = 0; i < width * height; i++) {
-        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
-        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
-        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
-    }
-
-    ofs.close();
-
-    std::cout << "Done" << std::endl;
 }
 
 void from_json(const json &j, WhittedRenderer &r) {

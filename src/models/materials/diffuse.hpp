@@ -14,7 +14,7 @@ struct DiffuseMaterial : Material {
 
     DiffuseMaterial() {}
 
-    vec3f get_diffuse(Renderer &);
+    vec3f get_diffuse();
 };
 
 void from_json(const json &j, DiffuseMaterial &d);

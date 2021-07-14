@@ -14,8 +14,8 @@ struct SpecularMaterial : Material {
 
     SpecularMaterial() {}
 
-    vec3f get_diffuse(Renderer &renderer);
-    vec3f get_specular(Renderer &renderer);
+    vec3f get_diffuse();
+    vec3f get_specular();
 };
 
 void from_json(const json &j, SpecularMaterial &d);

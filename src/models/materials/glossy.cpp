@@ -3,11 +3,11 @@
 
 #include "glossy.hpp"
 
-vec3f GlossyMaterial::get_diffuse(Renderer &) {
+vec3f GlossyMaterial::get_diffuse() {
     return rho;
 }
 
-vec3f GlossyMaterial::get_specular(Renderer &) {
+vec3f GlossyMaterial::get_specular() {
     return rho;
 }
 

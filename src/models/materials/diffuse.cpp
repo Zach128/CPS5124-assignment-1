@@ -3,7 +3,7 @@
 
 #include "diffuse.hpp"
 
-vec3f DiffuseMaterial::get_diffuse(Renderer &) {
+vec3f DiffuseMaterial::get_diffuse() {
     return rho;
 }
 
