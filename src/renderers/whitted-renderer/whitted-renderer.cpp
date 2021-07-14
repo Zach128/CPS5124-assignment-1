@@ -34,7 +34,7 @@ vec3f reflect(const vec3f &I, const vec3f &N) {
 
 vec3f refract(const vec3f &I, const vec3f &N, const float &refractive_index) {
     //Snell's law
-    float cosi = -std::max(-1.f, std::min(1.f, I*N));
+    float cosi = -std::max(-1.f, std::min(1.f, dot(I, N)));
     float etai = 1, etat = refractive_index;
     vec3f n = N;
 
@@ -53,7 +53,7 @@ vec3f refract(const vec3f &I, const vec3f &N, const float &refractive_index) {
 
 float fresnel(const vec3f &I, const vec3f &N, const float &refractive_index, float &kr)
 {
-    float cosi = std::max(-1.f, std::min(1.f, I * N));
+    float cosi = std::max(-1.f, std::min(1.f, dot(I, N)));
     float etai = 1, etat = refractive_index;
 
     if (cosi > 0) { std::swap(etai, etat); }
@@ -125,7 +125,7 @@ void WhittedRenderer::compute_diffuse_intensity(const vec3f &hit, const vec3f &N
 
         // Calculate shadows.
         // Offset the point to ensure it doesn't accidentally hit the same shape.
-        vec3f shadow_orig = light_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+        vec3f shadow_orig = dot(light_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
         // Temp variables.
         vec3f shadow_hit, shadow_N;
         float shadow_dist;
@@ -136,13 +136,11 @@ void WhittedRenderer::compute_diffuse_intensity(const vec3f &hit, const vec3f &N
             continue;
 
         // Compute the specular intensity for this given light.
-        intensity = intensity + lights[i]->intensity * std::max(0.f, light_dir * N);
+        intensity = intensity + lights[i]->intensity * std::max(0.f, dot(light_dir, N));
     }
 
     // Apply the intensity to the output vector.
-    out.x += in_color.x * intensity.x;
-    out.y += in_color.y * intensity.y;
-    out.z += in_color.z * intensity.z;
+    out = out + in_color * intensity;
 }
 
 void WhittedRenderer::compute_specular_intensity(const vec3f &dir, const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
@@ -151,18 +149,14 @@ void WhittedRenderer::compute_specular_intensity(const vec3f &dir, const vec3f &
     for (size_t i = 0; i < lights.size(); i++) {
         vec3f light_dir = (lights[i]->position - hit).normalize();
         // Calculate the reflected ray intensity.
-        float ray_intensity = std::max(0.f, reflect(light_dir, N) * dir);
+        float ray_intensity = std::max(0.f, dot(reflect(light_dir, N), dir));
 
         // Calculate the shine intensity for each component color.
-        intensity.x += powf(ray_intensity, SPEC_SHINE) * lights[i]->intensity.x;
-        intensity.y += powf(ray_intensity, SPEC_SHINE) * lights[i]->intensity.y;
-        intensity.z += powf(ray_intensity, SPEC_SHINE) * lights[i]->intensity.z;
+        intensity = intensity + lights[i]->intensity * powf(ray_intensity, SPEC_SHINE);
     }
 
     // Add the new colour to the output.
-    out.x += in_color.x + intensity.x * SPEC_ALBEDO;
-    out.y += in_color.y + intensity.y * SPEC_ALBEDO;
-    out.z += in_color.z + intensity.z * SPEC_ALBEDO;
+    out = out + in_color + intensity * SPEC_ALBEDO;
 }
 
 void WhittedRenderer::compute_glossy(const PinholeCamera &camera, const vec3f &dir, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
@@ -172,7 +166,7 @@ void WhittedRenderer::compute_glossy(const PinholeCamera &camera, const vec3f &d
     // Cast a reflection off the shape to determine the reflection.
     float reflect_dist;
     vec3f reflect_dir = reflect(dir, N).normalize();
-    vec3f reflect_orig = reflect_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+    vec3f reflect_orig = dot(reflect_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
     vec3f reflect_color = cast_ray(camera, reflect_orig, reflect_dir, reflect_dist, depth + 1);
 
     out = out + reflect_color * (1 - material->get_roughness());
@@ -189,14 +183,14 @@ void WhittedRenderer::compute_fresnel(const PinholeCamera &camera, const vec3f &
         // Simulate transmission.
         float refract_dist;
         vec3f refract_dir = refract(dir, N, material->get_eta()).normalize();
-        vec3f refract_orig = refract_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+        vec3f refract_orig = dot(refract_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
         refract_color = cast_ray(camera, refract_orig, refract_dir, refract_dist, depth + 1);
     }
 
     // Simulate reflection.
     float reflect_dist;
     vec3f reflect_dir = reflect(dir, N).normalize();
-    vec3f reflect_orig = reflect_dir * N < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+    vec3f reflect_orig = dot(reflect_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
     reflect_color = cast_ray(camera, reflect_orig, reflect_dir, reflect_dist, depth + 1);
 
     // Apply the new colours, multiplying by the ratio of light reflected to transmitted.
@@ -252,8 +246,8 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const vec3f &orig, 
 bool WhittedRenderer::ray_intersect(const Sphere &sphere, const vec3f &orig, const vec3f &dir, float &t0) const {
     vec3f L = sphere.position - orig;
     float sq_radius = sphere.radius * sphere.radius;
-    float tca = L * dir;
-    float d2 = L * L - tca * tca;
+    float tca = dot(L, dir);
+    float d2 = dot(L, L) - tca * tca;
 
     if (d2 > sq_radius) return false;
 
