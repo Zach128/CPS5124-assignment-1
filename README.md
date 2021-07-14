@@ -14,18 +14,19 @@ Source code for my CPS5124 study unit assignment.
 
 ### Task 2
 
-- [ ] Create a whitted-style ray tracer.
-    - [ ] Point lights.
-    - [ ] Diffuse surfaces.
-    - [ ] Specular reflective.
-    - [ ] Specular transmissive surfaces.
-    - [ ] Pinhole camera with box linear filter.
-- [ ] Implement tone mappers.
-    - [ ] Sigmoid tone mapper.
-    - [ ] Linear tone mapper.
+- [x] Create a whitted-style ray tracer.
+    - [x] Point lights.
+    - [x] Diffuse surfaces.
+    - [x] Specular reflective.
+    - [x] Specular transmissive surfaces.
+    - [x] Pinhole camera with box linear filter.
+- [x] Implement tone mappers.
+    - [x] Sigmoid tone mapper.
+    - [x] Linear tone mapper.
 
 ### Task 3
-- [ ] Extend the ray tracer to support the complex effects.
+- [ ] Extend the ray tracer to support the following effects.
+    - [ ] Path tracer.
     - [ ] Area Lights.
     - [ ] Glossy and translucent surfaces.
     - [ ] Create the following image estimators: uniform random and stratified sampling.

@@ -41,7 +41,8 @@ CMakeCache.txt
 Makefile
 
 # Outputs
-out.*
+out.ppm
+out-depth.ppm
 
 # Submodules
 lib/json

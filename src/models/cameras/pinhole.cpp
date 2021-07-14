@@ -7,8 +7,8 @@
 
 #include "pinhole.hpp"
 
-vec3f PinholeCamera::renderer_cast_ray(Renderer &renderer, const vec2i &frame_coords) {
-  return renderer.cast_ray(*this, frame_coords);
+vec3f PinholeCamera::renderer_cast_ray(Renderer &renderer, const vec3f &orig, const vec3f &dir, float &dist, size_t depth = 0) {
+  return renderer.cast_ray(*this, orig, dir, dist, depth);
 }
 
 void from_json(const json &j, PinholeCamera &c) {

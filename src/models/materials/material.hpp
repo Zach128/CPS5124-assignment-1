@@ -14,7 +14,11 @@ struct Material : TypedElement {
 
     Material() {}
 
-    virtual vec3f renderer_get_colour(Renderer &) { return vec3f(0, 0, 0); };
+    virtual vec3f get_diffuse() { return vec3f(0, 0, 0); };
+    virtual vec3f get_specular() { return vec3f(0, 0, 0); };
+    virtual float get_roughness() { return 1; };
+    virtual vec3f get_transmission() { return vec3f(0, 0, 0); };
+    virtual float get_eta() { return 1; };
 };
 
 void from_json(const json &j, Material &m);
