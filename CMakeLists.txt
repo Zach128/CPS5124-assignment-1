@@ -39,11 +39,14 @@ file(
     "${SRC_DIR}/models/shapes/sphere.cpp"
     "${SRC_DIR}/models/cameras/camera.cpp"
     "${SRC_DIR}/models/cameras/pinhole.cpp"
+    "${SRC_DIR}/models/cameras/lens-camera.cpp"
     "${SRC_DIR}/models/lights/light.cpp"
     "${SRC_DIR}/models/lights/point-light.cpp"
     "${SRC_DIR}/models/scene.cpp"
     "${SRC_DIR}/renderers/renderer.cpp"
+    "${SRC_DIR}/renderers/path-renderer/path-renderer.cpp"
     "${SRC_DIR}/renderers/whitted-renderer/whitted-renderer.cpp"
+    "${SRC_DIR}/utils/utils.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

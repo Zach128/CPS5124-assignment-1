@@ -23,10 +23,10 @@ public:
           lights(lights),
           primitives(primitives),
           renderer(renderer) {}
-    
+
     Scene() {}
 
     void prepare();
-    void render();
+    void render(const int &cam_id);
     void save();
 };

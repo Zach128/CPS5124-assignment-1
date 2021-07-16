@@ -17,6 +17,10 @@ public:
     ~Sphere() {}
 
     virtual bool renderer_ray_intersect(const Renderer &, const vec3f &orig, const vec3f &dir, float &t0) const;
+    void getSurfaceProperties( const vec3f &hitPoint, vec3f &hitNormal) const {
+        hitNormal = hitPoint - position;
+        hitNormal.normalize();
+    }
 };
 
 void from_json(const json &j, Sphere &s);

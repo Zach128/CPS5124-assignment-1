@@ -17,6 +17,7 @@ public:
     ~Shape() {}
 
     virtual bool renderer_ray_intersect(const Renderer &, const vec3f &, const vec3f &, float &t0) const { t0 = 0; return false; }
+    virtual void getSurfaceProperties( const vec3f &, vec3f &hitNormal) const { hitNormal = vec3f(0, 0, 0); };
 };
 
 void from_json(const json &j, Shape &s);

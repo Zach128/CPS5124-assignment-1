@@ -1,0 +1,63 @@
+{
+  "cameras" : [{
+    "id" : "pinhole",
+    "type" : "pinhole",
+    "fov" : 45,
+    "aspect" : 1.0,
+    "distance" : 5.0,
+    "position" : [0, 0, -15],
+    "target" : [0, 0, 0]
+  }],
+
+  "materials" : [{
+    "id" : "grey diffuse",
+    "type" : "diffuse",
+    "rho" : [0.8, 0.8, 0.8]
+  }, {
+    "id" : "white diffuse",
+    "type" : "diffuse",
+    "rho" : [1.0, 1.0, 1.0]
+  }],
+
+  "shapes" : [{
+    "id" : "furnace",
+    "type" : "sphere",
+    "centre" : [0, 0, 0],
+    "radius" : 50
+  }, {
+    "id" : "sphere 01",
+    "type" : "sphere",
+    "centre" : [0, 0, 0],
+    "radius" : 1.5
+  }],
+
+  "lights" : [{
+    "id" : "point light",
+    "type" : "point",
+    "position" : [0, 4.0, 0],
+    "power" : [300, 300, 300]
+  }],
+
+  "scene" : {
+    "camera" : "pinhole",
+    "lights" : ["point light"],
+    "primitives" : [{
+      "id" : "center",
+      "type" : "geometric",
+      "shape" : "sphere 01",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "furnace",
+      "type" : "geometric",
+      "shape" : "furnace",
+      "material" : "white diffuse"
+    }],
+    "renderer" : {
+      "type" : "PT",
+      "dimensions" : [512, 512],
+      "samples" : 8,
+      "depth" : 12,
+      "output" : "../output/furnace.ppm"
+    }
+  }
+}

@@ -107,6 +107,10 @@ template<size_t DIM,typename T> T dot(const vec<DIM,T>& lhs, const vec<DIM,T>& r
     return ret;
 }
 
+template<size_t DIM,typename T> vec<DIM, T> mix(const vec<DIM,T>& lhs, const vec<DIM,T>& rhs, const float &mixValue) {
+    return lhs * (1 - mixValue) + rhs * mixValue;
+}
+
 template <typename T> vec<3,T> cross(vec<3,T> v1, vec<3,T> v2) {
     return vec<3,T>(v1.y*v2.z - v1.z*v2.y, v1.z*v2.x - v1.x*v2.z, v1.x*v2.y - v1.y*v2.x);
 }

@@ -15,6 +15,7 @@
 #include "loaders/lights-loader.hpp"
 #include "renderers/renderer.hpp"
 #include "renderers/whitted-renderer/whitted-renderer.hpp"
+#include "renderers/path-renderer/path-renderer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -29,7 +30,7 @@ public:
     std::vector<std::shared_ptr<Light>> lights;
     std::vector<std::shared_ptr<Primitive>> primitives;
     std::shared_ptr<Renderer> renderer;
-    
+
     SceneLoader() {}
     SceneLoader(std::string base_path) : base_path(base_path) {}
 
@@ -67,7 +68,7 @@ public:
 private:
     void LoadPrimitives(const json &j, std::vector<std::shared_ptr<Primitive>> &primitives ) {
         std::string mat_id, shape_id;
-        
+
         primitives = std::vector<std::shared_ptr<Primitive>>();
         json scene = j.at("scene");
 
@@ -97,7 +98,7 @@ private:
                     if (found_mat == materials.end()) {
                         std::out_of_range("Material " + mat_id + " was not found.\n");
                     }
-                    
+
                     // Save the primitive record.
                     primitives.push_back(std::make_shared<Primitive>(Primitive(
                         primitive.at("id").get<std::string>(),
@@ -116,6 +117,8 @@ private:
         if (!r.empty()) {
             if (r.at("type").get<std::string>() == "WRT") {
                 renderer = r.get<std::shared_ptr<WhittedRenderer>>();
+            } else if (r.at("type").get<std::string>() == "PT") {
+                renderer = r.get<std::shared_ptr<PathRenderer>>();
             } else {
                 renderer = r.get<std::shared_ptr<Renderer>>();
             }

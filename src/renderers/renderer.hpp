@@ -15,6 +15,7 @@ using json = nlohmann::json;
 
 // Forward declare visited classes.
 class PinholeCamera;
+class LensCamera;
 class Scene;
 
 class Renderer {
@@ -39,6 +40,7 @@ public:
     virtual void save_depth();
 
     virtual vec3f cast_ray(const PinholeCamera &, const vec3f &, const vec3f &, float &, size_t) { return vec3f(0, 0, 0); };
+    virtual vec3f cast_ray(const LensCamera &, const vec3f &, const vec3f &, float &, size_t) { return vec3f(0, 0, 0); };
     virtual bool ray_intersect(const Sphere &, const vec3f &, const vec3f &, float &t0) const { t0 = 0; return false; };
 };
 

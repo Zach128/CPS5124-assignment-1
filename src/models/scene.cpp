@@ -7,8 +7,8 @@ void Scene::prepare() {
     renderer->prepare(*this);
 }
 
-void Scene::render() {
-    renderer->render(cameras[0]);
+void Scene::render(const int &cam_id) {
+    renderer->render(cameras[cam_id]);
 }
 
 void Scene::save() {

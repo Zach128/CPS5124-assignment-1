@@ -10,17 +10,18 @@ int main() {
     SceneLoader loader = SceneLoader();
     Scene s;
 
-    loader.LoadSceneFile("assignment_02.json", s);
+    // loader.LoadSceneFile("furnace.json", s);
+    loader.LoadSceneFile("assignment_01.json", s);
 
     s.prepare();
-    s.render();
+    s.render(0);
 
-    BoxBlur blurer = BoxBlur((size_t) s.renderer->width, (size_t) s.renderer->height);
-    SigmoidalToneMapper sigTone = SigmoidalToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
-    LinearToneMapper linTone = LinearToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
+    // BoxBlur blurer = BoxBlur((size_t) s.renderer->width, (size_t) s.renderer->height);
+    // SigmoidalToneMapper sigTone = SigmoidalToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
+    // LinearToneMapper linTone = LinearToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
 
     // sigTone.postProcess(s);
-    linTone.postProcess(s);
+    // linTone.postProcess(s);
     // blurer.postProcess(s);
 
     s.save();

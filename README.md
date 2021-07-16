@@ -25,11 +25,14 @@ Source code for my CPS5124 study unit assignment.
     - [x] Linear tone mapper.
 
 ### Task 3
-- [ ] Extend the ray tracer to support the following effects.
+- [ ] Extend the ray tracer to support the complex effects.
     - [ ] Path tracer.
+    - [ ] Lens-based camera.
     - [ ] Area Lights.
-    - [ ] Glossy and translucent surfaces.
-    - [ ] Create the following image estimators: uniform random and stratified sampling.
+    - [x] Glossy and translucent surfaces.
+    - [ ] Create the following image estimators:
+        - [ ] Uniform random.
+        - [ ] Stratified sampling.
     - [ ] Russian Roulette.
 
 ### Task 4
