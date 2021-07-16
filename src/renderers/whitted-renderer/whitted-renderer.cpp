@@ -42,8 +42,6 @@ void WhittedRenderer::prepare(const Scene &scene) {
 
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
-    vec3f dir;
-    float dir_x, dir_y, dir_z;
 
     // Get a camera-to-world matrix for the camera's location and orientation.
     cameraToWorld = lookAt(camera->position, camera->target);

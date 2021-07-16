@@ -23,8 +23,7 @@ enable_cxx_compiler_flag_if_supported("-pedantic")
 enable_cxx_compiler_flag_if_supported("-std=c++17")
 # enable_cxx_compiler_flag_if_supported("-O3")
 enable_cxx_compiler_flag_if_supported("-g")
-
-# enable_cxx_compiler_flag_if_supported("-fopenmp")
+enable_cxx_compiler_flag_if_supported("-fopenmp")
 
 file(
     GLOB SOURCES
@@ -58,3 +57,9 @@ set(nlohmann_json_DIR "${LIB_DIR}/json")
 add_subdirectory("${nlohmann_json_DIR}")
 find_package(nlohmann_json 3.2.0 REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
+# OpenMP
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+endif()
