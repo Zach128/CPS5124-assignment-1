@@ -42,6 +42,7 @@ file(
     "${SRC_DIR}/models/lights/light.cpp"
     "${SRC_DIR}/models/lights/point-light.cpp"
     "${SRC_DIR}/models/scene.cpp"
+    "${SRC_DIR}/models/rays/ray-sampler.cpp"
     "${SRC_DIR}/renderers/renderer.cpp"
     "${SRC_DIR}/renderers/path-renderer/path-renderer.cpp"
     "${SRC_DIR}/renderers/whitted-renderer/whitted-renderer.cpp"

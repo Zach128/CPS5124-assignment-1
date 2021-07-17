@@ -15,6 +15,7 @@
 #include "models/lights/light.hpp"
 #include "models/lights/point-light.hpp"
 #include "models/primitive.hpp"
+#include "models/rays/ray-sampler.hpp"
 
 #include "whitted-renderer.hpp"
 
@@ -25,8 +26,6 @@
 #define FRES_ALBEDO 0.8
 
 static size_t max_depth = MAX_RAY_DEPTH;
-static Matrix44f cameraToWorld;
-static float scale;
 static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
 
@@ -45,42 +44,23 @@ void WhittedRenderer::prepare(const Scene &scene) {
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
 
-    // Get a camera-to-world matrix for the camera's location and orientation.
-    cameraToWorld = lookAt(camera->position, camera->target);
-    // Calculate the 'spread factor' for the generated rays.
-    scale = camera->aspect * tan(DEG_RAD(camera->fov * 0.5));
+    RaySampler sampler = RaySampler(*camera, width, height, samples);
 
     size_t size = width * height;
 
-    float pixelWidth = 1.f / width;
-    float pixelHeight = 1.f / height;
-    float sampleWidth = pixelWidth / (samples);
-    float sampleHeight = pixelHeight / (samples);
-    float halfWidth = pixelWidth / 2.f;
-    float halfHeight = pixelHeight / 2.f;
-
     #pragma omp parallel for
     for (size_t i = 0; i < size; i++) {
-        vec3f dir, sample;
-        float dir_x, dir_y, dir_z = -1;
         size_t x = i % width;
         size_t y = i / height;
 
-        sample = vec3f(0, 0, 0);
-        for (size_t j = 0; j < samples; j++) {
-            // Calculate a uniform sample offset.
-            float sx = (pixelWidth + sampleWidth) * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            float sy = (pixelHeight + sampleHeight) * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        vec3f sample = vec3f(0, 0, 0);
 
-            // Calculate the ray direction of the current pixel in the framebuffer.
-            dir_x = (-(2. * (x + .5) / width - 1)) * scale  + sx;
-            dir_y = ((1 - 2 * (y + .5) / height)) * scale + sy;
+        std::vector<RayInfo> rays;
 
-            // Convert the ray direction to world space to obtain the true coordinates.
-            cameraToWorld.multDirMatrix(vec3f(dir_x, dir_y, dir_z), dir);
-            dir = dir.normalize();
+        sampler.get_sample_rays(x, y, rays);
 
-            sample = sample + camera->renderer_cast_ray(*this, RayInfo(camera->position, dir), depthbuffer[i]);
+        for (RayInfo &ray : rays) {
+            sample = sample + camera->renderer_cast_ray(*this, ray, depthbuffer[i]);
         }
 
         framebuffer[i] = sample / samples;
