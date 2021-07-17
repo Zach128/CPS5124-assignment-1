@@ -30,9 +30,9 @@ Source code for my CPS5124 study unit assignment.
     - [ ] Lens-based camera.
     - [ ] Area Lights.
     - [x] Glossy and translucent surfaces.
-    - [ ] Create the following image estimators:
-        - [ ] Uniform random.
-        - [ ] Stratified sampling.
+    - [x] Create the following image estimators:
+        - [x] Uniform random.
+        - [x] Stratified sampling.
     - [ ] Russian Roulette.
 
 ### Task 4

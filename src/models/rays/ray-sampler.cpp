@@ -7,6 +7,11 @@
 #include "ray-sampler.hpp"
 
 void RaySampler::get_sample_rays(const size_t x, const size_t y, std::vector<RayInfo> &rays) {
+    if (method == UNIFORM) get_uniform_sample_rays(x, y, rays);
+    else get_stratified_sample_rays(x, y, rays);
+}
+
+void RaySampler::get_uniform_sample_rays(const size_t x, const size_t y, std::vector<RayInfo> &rays) {
     vec3f cameraDir(0, 0, -1), worldDir;
 
     for (size_t j = 0; j < samples; j++) {
@@ -16,6 +21,30 @@ void RaySampler::get_sample_rays(const size_t x, const size_t y, std::vector<Ray
 
         // Calculate the ray direction of the current pixel in the framebuffer.
         cameraDir.x = (-(2. * (x + .5) / frameWidth - 1)) * scale  + sx;
+        cameraDir.y = ((1 - 2 * (y + .5) / frameHeight)) * scale + sy;
+
+        // Convert the ray direction to world space to obtain the true coordinates.
+        cameraToWorld.multDirMatrix(cameraDir, worldDir);
+        worldDir.normalize();
+
+        rays.push_back(RayInfo(camera.position, worldDir));
+    }
+}
+
+void RaySampler::get_stratified_sample_rays(const size_t x, const size_t y, std::vector<RayInfo> &rays) {
+    vec3f cameraDir(0, 0, -1), worldDir;
+    float e = powf(samples, 0.5f);
+
+    for (size_t j = 0; j < samples; j++) {
+        float sx = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+        float sy = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+        // Calculate a stratified sample offset.
+        sx = (pixelWidth / e) * (fmod(j, e) + sx);
+        sy = (pixelHeight / e) * (j / e + sy);
+
+        // Calculate the ray direction of the current pixel in the framebuffer.
+        cameraDir.x = (-(2. * (x + .5) / frameWidth - 1)) * scale + sx;
         cameraDir.y = ((1 - 2 * (y + .5) / frameHeight)) * scale + sy;
 
         // Convert the ray direction to world space to obtain the true coordinates.
