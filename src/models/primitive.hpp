@@ -2,10 +2,10 @@
 #include <iostream>
 #include <memory>
 
-#include "models/shapes/shape.hpp"
 #include "models/materials/material.hpp"
 #include "models/object.hpp"
 #include "utils/mat.hpp"
+#include "models/shapes/shape.hpp"
 
 struct Primitive : TypedElement {
     std::shared_ptr<Shape> shape;

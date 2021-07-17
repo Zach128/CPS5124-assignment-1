@@ -2,6 +2,7 @@
 #include <iostream>
 #include "utils/vec.hpp"
 #include "models/shapes/shape.hpp"
+#include "models/rays/ray.hpp"
 
 using json = nlohmann::json;
 
@@ -16,7 +17,7 @@ public:
     Sphere() : Shape() {}
     ~Sphere() {}
 
-    virtual bool renderer_ray_intersect(const Renderer &, const vec3f &orig, const vec3f &dir, float &t0) const;
+    virtual bool renderer_ray_intersect(const Renderer &, const RayInfo &ray, float &t0) const;
     void getSurfaceProperties( const vec3f &hitPoint, vec3f &hitNormal) const {
         hitNormal = hitPoint - position;
         hitNormal.normalize();

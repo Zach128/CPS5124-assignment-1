@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "utils/vec.hpp"
+#include "models/rays/ray.hpp"
 #include "models/cameras/camera.hpp"
 #include "models/shapes/sphere.hpp"
 #include "models/primitive.hpp"
@@ -39,9 +40,9 @@ public:
     virtual void save();
     virtual void save_depth();
 
-    virtual vec3f cast_ray(const PinholeCamera &, const vec3f &, const vec3f &, float &, size_t) { return vec3f(0, 0, 0); };
-    virtual vec3f cast_ray(const LensCamera &, const vec3f &, const vec3f &, float &, size_t) { return vec3f(0, 0, 0); };
-    virtual bool ray_intersect(const Sphere &, const vec3f &, const vec3f &, float &t0) const { t0 = 0; return false; };
+    virtual vec3f cast_ray(const PinholeCamera &, const RayInfo &, float &, size_t) { return vec3f(0, 0, 0); };
+    virtual vec3f cast_ray(const LensCamera &, const RayInfo &, float &, size_t) { return vec3f(0, 0, 0); };
+    virtual bool ray_intersect(const Sphere &, const RayInfo &, float &t0) const { t0 = 0; return false; };
 };
 
 void from_json(const json &j, Renderer &r);

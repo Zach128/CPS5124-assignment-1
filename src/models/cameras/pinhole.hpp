@@ -1,6 +1,7 @@
 #pragma once
 #include <nlohmann/json.hpp>
 
+#include "models/rays/ray.hpp"
 #include "models/primitive.hpp"
 #include "models/cameras/camera.hpp"
 
@@ -13,7 +14,7 @@ struct PinholeCamera : Camera {
 
     PinholeCamera() : Camera() {}
 
-    vec3f renderer_cast_ray(Renderer &renderer, const vec3f &orig, const vec3f &dir, float &dist, size_t depth);
+    vec3f renderer_cast_ray(Renderer &renderer, const RayInfo &ray, float &dist, size_t depth);
 };
 
 void from_json(const json &j, PinholeCamera &c);

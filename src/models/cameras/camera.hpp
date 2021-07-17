@@ -1,6 +1,7 @@
 #pragma once
 #include "utils/vec.hpp"
 #include "models/object.hpp"
+#include "models/rays/ray.hpp"
 #include "models/shapes/shape.hpp"
 #include "models/primitive.hpp"
 
@@ -27,7 +28,7 @@ struct Camera : TypedElement {
 
     Camera() : TypedElement() {}
 
-    virtual vec3f renderer_cast_ray(Renderer &, const vec3f &, const vec3f &, float &, size_t = 0) { return vec3f(0, 0, 0); };
+    virtual vec3f renderer_cast_ray(Renderer &, const RayInfo &, float &, size_t = 0) { return vec3f(0, 0, 0); };
 };
 
 void from_json(const json &j, Camera &c);

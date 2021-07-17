@@ -2,8 +2,9 @@
 #include <memory>
 #include <limits>
 
-#include "models/primitive.hpp"
 #include "utils/vec.hpp"
+
+class Primitive;
 
 enum RayType { primaryRay, shadowRay };
 
@@ -13,4 +14,12 @@ struct IsectInfo
     float tNear = std::numeric_limits<float>::max();
     vec2f uv;
     size_t index = 0;
+};
+
+struct RayInfo
+{
+    vec3f orig;
+    vec3f dir;
+
+    RayInfo(const vec3f &orig, const vec3f &dir) : orig(orig), dir(dir) {}
 };

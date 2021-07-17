@@ -1,15 +1,16 @@
 #include "utils/vec.hpp"
 #include "renderers/renderer.hpp"
+#include "models/rays/ray.hpp"
 
 #include "sphere.hpp"
 
-bool Sphere::renderer_ray_intersect(const Renderer &renderer, const vec3f &orig, const vec3f &dir, float &t0) const {
-    return renderer.ray_intersect(*this, orig, dir, t0);
+bool Sphere::renderer_ray_intersect(const Renderer &renderer, const RayInfo &ray, float &t0) const {
+    return renderer.ray_intersect(*this, ray, t0);
 }
 
 void from_json(const json &j, Sphere &s) {
     nlohmann::from_json(j, static_cast<Shape &>(s));
-    
+
     j.at("radius").get_to(s.radius);
 }
 

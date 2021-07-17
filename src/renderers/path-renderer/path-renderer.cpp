@@ -13,6 +13,7 @@
 #include "models/lights/light.hpp"
 #include "models/lights/point-light.hpp"
 #include "models/primitive.hpp"
+#include "models/rays/ray.hpp"
 
 #include "path-renderer.hpp"
 
@@ -61,7 +62,7 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
             cameraToWorld.multDirMatrix(vec3f(dir_x, dir_y, dir_z), dir);
             dir = dir.normalize();
 
-            framebuffer[x + y * width] = camera->renderer_cast_ray(*this, camera->position, dir, depthbuffer[x + y * width]);
+            framebuffer[x + y * width] = camera->renderer_cast_ray(*this, RayInfo(camera->position, dir), depthbuffer[x + y * width]);
         }
     }
 
@@ -160,7 +161,7 @@ bool PathRenderer::scene_intersect(const vec3f &orig, const vec3f &dir, vec3f &h
         float dist_i;
 
         // If the sphere is hit, record it.
-        if (primitives[i]->shape->renderer_ray_intersect(*this, orig, dir, dist_i) && dist_i <= dist) {
+        if (primitives[i]->shape->renderer_ray_intersect(*this, RayInfo(orig, dir), dist_i) && dist_i <= dist) {
             dist = dist_i;
             hit = orig + dir * dist_i;
             N = (hit - primitives[i]->shape->position).normalize();
