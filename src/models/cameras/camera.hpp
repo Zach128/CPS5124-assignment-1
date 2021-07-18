@@ -3,7 +3,7 @@
 #include "models/object.hpp"
 #include "models/rays/ray.hpp"
 #include "models/shapes/shape.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 
 using json = nlohmann::json;
 

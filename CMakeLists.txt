@@ -41,6 +41,7 @@ file(
     "${SRC_DIR}/models/cameras/lens-camera.cpp"
     "${SRC_DIR}/models/lights/light.cpp"
     "${SRC_DIR}/models/lights/point-light.cpp"
+    "${SRC_DIR}/models/lights/area-light.cpp"
     "${SRC_DIR}/models/scene.cpp"
     "${SRC_DIR}/models/rays/ray-sampler.cpp"
     "${SRC_DIR}/renderers/renderer.cpp"

@@ -2,7 +2,7 @@
 #include <nlohmann/json.hpp>
 
 #include "models/rays/ray.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 #include "models/cameras/camera.hpp"
 
 using json = nlohmann::json;

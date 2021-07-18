@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 
+#include "models/rays/ray.hpp"
 #include "point-light.hpp"
 
 // void PointLight::illuminate(const vec3f &P, vec3f &lightDir, vec3f &lightIntensity, float &distance) const {
@@ -13,9 +14,9 @@
 //     lightIntensity = intensity / (4 * M_PI * r2);
 // }
 
-void PointLight::illuminate(const vec3f &P, vec3f &lightDir, vec3f &lightIntensity, float &distance) const {
-    lightDir = (position - P).normalize();
-    distance = (position - P).norm();
+void PointLight::illuminate(const RayInfo &, const vec3f &hit, const vec3f &, vec3f &lightDir, vec3f &lightIntensity, float &distance) const {
+    lightDir = (position - hit).normalize();
+    distance = (position - hit).norm();
 
     lightIntensity = intensity;
 }

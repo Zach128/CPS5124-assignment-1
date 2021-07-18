@@ -11,7 +11,7 @@ int main() {
     Scene s;
 
     // loader.LoadSceneFile("furnace.json", s);
-    loader.LoadSceneFile("assignment_01.json", s);
+    loader.LoadSceneFile("assignment_03.json", s);
 
     s.prepare();
     s.render(0);

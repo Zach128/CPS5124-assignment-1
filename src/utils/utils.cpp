@@ -68,14 +68,14 @@ Matrix44f lookAt(const vec3f& from, const vec3f& to, const vec3f& tmp = vec3f(0,
     return camToWorld;
 }
 
-vec3f reflect(const vec3f &I, const vec3f &N) {
-    return I - N * 2.f * (dot(I, N));
+vec3f reflect(const vec3f &dir, const vec3f &N) {
+    return dir - N * 2.f * (dot(dir, N));
 }
 
-vec3f refract(const vec3f &I, const vec3f &N, const float &refractive_index) {
+vec3f refract(const vec3f &dir, const vec3f &N, const float &refractive_index) {
     //Snell's law
 
-    float cosi = -std::max(-1.f, std::min(1.f, dot(I, N)));
+    float cosi = -std::max(-1.f, std::min(1.f, dot(dir, N)));
     float etai = 1, etat = refractive_index;
     vec3f n = N;
 
@@ -89,12 +89,12 @@ vec3f refract(const vec3f &I, const vec3f &N, const float &refractive_index) {
     float eta = etai / etat;
     float k = 1 - eta * eta * (1 - cosi * cosi);
 
-    return k < 0 ? vec3f(1, 0, 0) : I * eta + n * (eta * cosi - sqrtf(k));
+    return k < 0 ? vec3f(1, 0, 0) : dir * eta + n * (eta * cosi - sqrtf(k));
 }
 
-float fresnel(const vec3f &I, const vec3f &N, const float &refractive_index, float &kr)
+float fresnel(const vec3f &dir, const vec3f &N, const float &refractive_index, float &kr)
 {
-    float cosi = std::max(-1.f, std::min(1.f, dot(I, N)));
+    float cosi = std::max(-1.f, std::min(1.f, dot(dir, N)));
     float etai = 1, etat = refractive_index;
 
     if (cosi > 0) { std::swap(etai, etat); }

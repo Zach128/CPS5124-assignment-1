@@ -2,7 +2,7 @@
 #include "models/shapes/shape.hpp"
 #include "models/shapes/sphere.hpp"
 #include "models/cameras/camera.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 #include "models/rays/ray.hpp"
 #include "renderers/renderer.hpp"
 

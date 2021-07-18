@@ -14,7 +14,7 @@
 #include "models/shapes/sphere.hpp"
 #include "models/lights/light.hpp"
 #include "models/lights/point-light.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 #include "models/rays/ray-sampler.hpp"
 
 #include "path-renderer.hpp"
@@ -78,7 +78,7 @@ vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, fl
     dist = 1.f - dist / (1.f + dist);
 
     for (std::shared_ptr<Light> light : lights) {
-        compute_diffuse_intensity(light, hit, N, diffuse_intensity);
+        compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
         // If the material is specular, calculate it's specular highlights.
         if (material->type == "specular reflection" || material->type == "glossy reflection")
             compute_specular_intensity(light, ray, hit, N, specular_intensity);

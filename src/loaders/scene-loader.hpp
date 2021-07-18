@@ -8,7 +8,8 @@
 #include "models/materials/material.hpp"
 #include "models/shapes/shape.hpp"
 #include "models/lights/light.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
+#include "models/primitives/emitter-primitive.hpp"
 #include "loaders/camera-loader.hpp"
 #include "loaders/material-loader.hpp"
 #include "loaders/shapes-loader.hpp"
@@ -59,6 +60,8 @@ public:
             LoadPrimitives(j, primitives);
             LoadRenderer(j);
 
+            AssignShapesToAreaLights();
+
             scene = Scene(cameras, materials, shapes, lights, renderer, primitives);
         } else {
             std::cerr << "Failed to load " << file_name << std::endl;
@@ -66,6 +69,25 @@ public:
     }
 
 private:
+    void AssignShapesToAreaLights() {
+
+        for(std::shared_ptr<Light> light : lights) {
+            if (light->type == "area") {
+                std::shared_ptr<AreaLight> areaLight = std::dynamic_pointer_cast<AreaLight>(light);
+                std::string shape_id = areaLight->shape_id;
+
+                const auto shape_filter = [&shape_id](const std::shared_ptr<Shape> &shape) { return shape->id == shape_id; };
+                auto found_shape = std::find_if(shapes.begin(), shapes.end(), shape_filter);
+
+                if (found_shape == shapes.end()) {
+                    std::out_of_range("Area light " + areaLight->id + " references shape " + shape_id + ", but it was not found.\n");
+                }
+
+                areaLight->shape = found_shape[0];
+            }
+        }
+    }
+
     void LoadPrimitives(const json &j, std::vector<std::shared_ptr<Primitive>> &primitives ) {
         std::string mat_id, shape_id;
 
@@ -85,27 +107,50 @@ private:
                     primitive.at("shape").get_to<std::string>(shape_id);
                     primitive.at("material").get_to<std::string>(mat_id);
 
+                    std::string primitive_id = primitive.at("id").get<std::string>();
+                    std::string primitive_type = primitive.at("type").get<std::string>();
+
                     // Search for the material and shape.
                     auto found_shape = std::find_if(shapes.begin(), shapes.end(), shape_filter);
                     auto found_mat = std::find_if(materials.begin(), materials.end(), mat_filter);
 
                     // Check we found the shape.
                     if (found_shape == shapes.end()) {
-                        std::out_of_range("Shape " + shape_id + " was not found.\n");
+                        std::out_of_range("Primitive " + primitive_id + " references shape " + shape_id + ", but it was not found.\n");
                     }
 
                     // Check we found the material.
                     if (found_mat == materials.end()) {
-                        std::out_of_range("Material " + mat_id + " was not found.\n");
+                        std::out_of_range("Primitive " + primitive_id + " references material " + mat_id + ", but it was not found.\n");
                     }
 
-                    // Save the primitive record.
-                    primitives.push_back(std::make_shared<Primitive>(Primitive(
-                        primitive.at("id").get<std::string>(),
-                        primitive.at("type").get<std::string>(),
-                        found_shape[0],
-                        found_mat[0]
-                    )));
+                    if (primitive_type == "emitter") {
+                        std::string light_id = primitive.at("light").get<std::string>();
+
+                        auto light_filter = [&light_id](const std::shared_ptr<Light> &light) { return light->id == light_id; };
+                        auto found_light = std::find_if(lights.begin(), lights.end(), light_filter);
+
+                        if (found_light == lights.end()) {
+                            std::out_of_range("Emitter primitive " + primitive_id + " references area light " + light_id + ", but it was not found.\n");
+                        }
+
+                        // Save the primitive record.
+                        primitives.push_back(std::make_shared<Primitive>(EmitterPrimitive(
+                            primitive_id,
+                            primitive_type,
+                            found_shape[0],
+                            found_mat[0],
+                            std::dynamic_pointer_cast<AreaLight>(found_light[0])
+                        )));
+                    } else {
+                        // Save the primitive record.
+                        primitives.push_back(std::make_shared<Primitive>(Primitive(
+                            primitive_id,
+                            primitive_type,
+                            found_shape[0],
+                            found_mat[0]
+                        )));
+                    }
                 }
             }
         }

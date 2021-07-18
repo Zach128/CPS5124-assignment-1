@@ -14,7 +14,7 @@
 #include "models/shapes/sphere.hpp"
 #include "models/lights/light.hpp"
 #include "models/lights/point-light.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 
 #include "path-renderer.hpp"
 

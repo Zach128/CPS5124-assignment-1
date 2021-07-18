@@ -3,7 +3,7 @@
 #include "models/cameras/camera.hpp"
 #include "models/materials/diffuse.hpp"
 #include "renderers/renderer.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 #include "models/rays/ray.hpp"
 
 class PathRenderer : public Renderer {

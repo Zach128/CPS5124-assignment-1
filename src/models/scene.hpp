@@ -4,7 +4,7 @@
 #include "models/materials/material.hpp"
 #include "models/shapes/shape.hpp"
 #include "models/lights/light.hpp"
-#include "models/primitive.hpp"
+#include "models/primitives/primitive.hpp"
 #include "renderers/renderer.hpp"
 
 class Scene {

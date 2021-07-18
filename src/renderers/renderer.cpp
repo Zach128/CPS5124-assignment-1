@@ -26,15 +26,15 @@ bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &
     dist = std::numeric_limits<float>::max();
 
     // Iterate over each primitive.
-    for (size_t i = 0; i < primitives.size(); i++) {
+    for (std::shared_ptr<Primitive> primitive : primitives) {
         float dist_i;
 
         // If the primitive is hit, record it.
-        if (primitives[i]->shape->ray_intersect(ray, dist_i) && dist_i <= dist) {
+        if (primitive->type == "geometric" && primitive->shape->ray_intersect(ray, dist_i) && dist_i <= dist) {
             dist = dist_i;
             hit = ray.orig + ray.dir * dist_i;
-            N = (hit - primitives[i]->shape->position).normalize();
-            material = primitives[i]->material;
+            N = (hit - primitive->shape->position).normalize();
+            material = primitive->material;
         }
     }
 
@@ -42,12 +42,12 @@ bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &
     return dist < 1000;
 }
 
-void Renderer::compute_diffuse_intensity(const std::shared_ptr<Light> &light, const vec3f &hit, const vec3f &N, vec3f &out) {
+void Renderer::compute_diffuse_intensity(const std::shared_ptr<Light> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
     // Calculate diffuse lighting from the given light source.
     vec3f light_dir, light_intensity;
     float light_distance;
 
-    light->illuminate(hit, light_dir, light_intensity, light_distance);
+    light->illuminate(ray, hit, N, light_dir, light_intensity, light_distance);
 
     // Calculate shadows.
     // Offset the point to ensure it doesn't accidentally hit the same shape.
@@ -69,7 +69,7 @@ void Renderer::compute_specular_intensity(const std::shared_ptr<Light> &light, c
     vec3f light_dir, light_intensity;
     float light_distance;
 
-    light->illuminate(hit, light_dir, light_intensity, light_distance);
+    light->illuminate(ray, hit, N, light_dir, light_intensity, light_distance);
 
     // Calculate the reflected ray intensity.
     float ray_intensity = std::max(0.f, dot(reflect(light_dir, N), ray.dir));
