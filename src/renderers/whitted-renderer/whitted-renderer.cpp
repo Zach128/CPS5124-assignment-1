@@ -69,56 +69,43 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Done" << std::endl;
 }
 
-void WhittedRenderer::compute_diffuse_intensity(const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
-    vec3f intensity(0, 0, 0);
+void WhittedRenderer::compute_diffuse_intensity(const std::shared_ptr<Light> &light, const vec3f &hit, const vec3f &N, vec3f &out) {
+    // Calculate diffuse lighting from the given light source.
+    vec3f light_dir, light_intensity;
+    float light_distance;
 
-    // Calculate diffuse lighting from each light source.
-    for (size_t i = 0; i < lights.size(); i++) {
-        vec3f light_dir, light_intensity;
-        float light_distance;
+    light->illuminate(hit, light_dir, light_intensity, light_distance);
 
-        lights[i]->illuminate(hit, light_dir, light_intensity, light_distance);
+    // Calculate shadows.
+    // Offset the point to ensure it doesn't accidentally hit the same shape.
+    vec3f shadow_orig = dot(light_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
+    // Temp variables.
+    vec3f shadow_hit, shadow_N;
+    float shadow_dist;
+    std::shared_ptr<Material> tmpmaterial;
 
-        // Calculate shadows.
-        // Offset the point to ensure it doesn't accidentally hit the same shape.
-        vec3f shadow_orig = dot(light_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
-        // Temp variables.
-        vec3f shadow_hit, shadow_N;
-        float shadow_dist;
-        std::shared_ptr<Material> tmpmaterial;
+    // Check if a ray from this point to the current light is obscured by another object. If so, skip this light.
+    if (scene_intersect(RayInfo(shadow_orig, light_dir), shadow_hit, shadow_N, shadow_dist, tmpmaterial) && (shadow_hit - shadow_orig).norm() < light_distance)
+        return;
 
-        // Check if a ray from this point to the current light is obscured by another object. If so, skip this light.
-        if (scene_intersect(RayInfo(shadow_orig, light_dir), shadow_hit, shadow_N, shadow_dist, tmpmaterial) && (shadow_hit - shadow_orig).norm() < light_distance)
-            continue;
-
-        // Compute the specular intensity for this given light.
-        intensity = intensity + light_intensity * std::max(0.f, dot(light_dir, N));
-    }
-
-    // Apply the intensity to the output vector.
-    out = out + in_color * intensity;
+    // Compute the specular intensity for this given light.
+    out = out + light_intensity * std::max(0.f, dot(light_dir, N));
 }
 
-void WhittedRenderer::compute_specular_intensity(const RayInfo &ray, const vec3f &hit, const vec3f &N, const vec3f &in_color, vec3f &out) {
-    vec3f intensity(0, 0, 0);
+void WhittedRenderer::compute_specular_intensity(const std::shared_ptr<Light> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
+    vec3f light_dir, light_intensity;
+    float light_distance;
 
-    for (size_t i = 0; i < lights.size(); i++) {
-        vec3f light_dir = (lights[i]->position - hit).normalize();
-        // Calculate the reflected ray intensity.
-        float ray_intensity = std::max(0.f, dot(reflect(light_dir, N), ray.dir));
+    light->illuminate(hit, light_dir, light_intensity, light_distance);
 
-        // Calculate the shine intensity for each component color.
-        intensity = intensity + lights[i]->intensity * powf(ray_intensity, SPEC_SHINE);
-    }
+    // Calculate the reflected ray intensity.
+    float ray_intensity = std::max(0.f, dot(reflect(light_dir, N), ray.dir));
 
-    // Add the new colour to the output.
-    out = out + in_color + intensity * SPEC_ALBEDO;
+    // Calculate the shine intensity for each component color.
+    out = out + light_intensity * powf(ray_intensity, SPEC_SHINE);
 }
 
 void WhittedRenderer::compute_glossy(const PinholeCamera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
-    // If the material is glossy, also calculate the highlights.
-    compute_specular_intensity(ray, hit, N, material->get_specular(), out);
-
     // Cast a reflection off the shape to determine the reflection.
     float reflect_dist;
     vec3f reflect_dir = reflect(ray.dir, N).normalize();
@@ -161,7 +148,7 @@ bool WhittedRenderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, 
         float dist_i;
 
         // If the sphere is hit, record it.
-        if (primitives[i]->shape->renderer_ray_intersect(*this, ray, dist_i) && dist_i <= dist) {
+        if (primitives[i]->shape->ray_intersect(ray, dist_i) && dist_i <= dist) {
             dist = dist_i;
             hit = ray.orig + ray.dir * dist_i;
             N = (hit - primitives[i]->shape->position).normalize();
@@ -176,7 +163,7 @@ bool WhittedRenderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, 
 vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth = 0) {
     vec3f hit, N;
     std::shared_ptr<Material> material;
-    vec3f total_color, diffuse_intensity;
+    vec3f total_color, diffuse_intensity, specular_intensity;
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
     if(depth > max_depth || !scene_intersect(ray, hit, N, dist, material)) {
@@ -187,32 +174,22 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray,
     // Record the depth value as an inverse reciprocal of the actual distance.
     dist = 1.f - dist / (1.f + dist);
 
-    compute_diffuse_intensity(hit, N, material->get_diffuse(), total_color);
+    for (std::shared_ptr<Light> light : lights) {
+        compute_diffuse_intensity(light, hit, N, diffuse_intensity);
+        // If the material is specular, calculate it's specular highlights.
+        if (material->type == "specular reflection" || material->type == "glossy reflection")
+            compute_specular_intensity(light, ray, hit, N, specular_intensity);
+    }
 
-    // If the material is specular, calculate it's specular highlights.
-    if (material->type == "specular reflection") compute_specular_intensity(ray, hit, N, material->get_specular(), total_color);
-    else if (material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, material, depth, total_color);
+    // Apply the intensity to the output vector.
+    total_color = total_color + material->get_diffuse() * diffuse_intensity;
+    // Add the new colour to the output.
+    total_color = total_color + (material->get_specular() + specular_intensity * SPEC_ALBEDO);
+
+    if (material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, material, depth, total_color);
     else if (material->type == "fresnel dielectric") compute_fresnel(camera, ray, hit, N, material, depth, total_color);
 
     return total_color;
-}
-
-bool WhittedRenderer::ray_intersect(const Sphere &sphere, const RayInfo &ray, float &t0) const {
-    vec3f L = sphere.position - ray.orig;
-    float sq_radius = sphere.radius * sphere.radius;
-    float tca = dot(L, ray.dir);
-    float d2 = dot(L, L) - tca * tca;
-
-    if (d2 > sq_radius) return false;
-
-    float thc = sqrtf(sq_radius - d2);
-    t0 = tca - thc;
-    float t1 = tca + thc;
-
-    if (t0 < 1e-3) t0 = t1;
-    if (t0 < 1e-3) return false;
-
-    return true;
 }
 
 void from_json(const json &j, WhittedRenderer &r) {

@@ -42,7 +42,6 @@ public:
 
     virtual vec3f cast_ray(const PinholeCamera &, const RayInfo &, float &, size_t) { return vec3f(0, 0, 0); };
     virtual vec3f cast_ray(const LensCamera &, const RayInfo &, float &, size_t) { return vec3f(0, 0, 0); };
-    virtual bool ray_intersect(const Sphere &, const RayInfo &, float &t0) const { t0 = 0; return false; };
 };
 
 void from_json(const json &j, Renderer &r);
