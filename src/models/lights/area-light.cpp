@@ -14,8 +14,8 @@ void AreaLight::illuminate(const RayInfo &srcRay, const vec3f &hit, const vec3f 
         vec3f centerToRay = R * dot(lightDir, R) - lightDir;
         float distToCenter = centerToRay.norm();
 
-        // vec3f closestPoint = lightDir + centerToRay * std::max(0.f, std::min(1.f, std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter));
-        vec3f closestPoint = lightDir + centerToRay * std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter;
+        vec3f closestPoint = lightDir + centerToRay * std::max(0.f, std::min(1.f, std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter));
+        // vec3f closestPoint = lightDir + centerToRay * std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter;
 
         lightDir = (closestPoint - hit).normalize();
         distance = (closestPoint - hit).norm();

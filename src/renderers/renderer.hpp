@@ -41,7 +41,7 @@ public:
     virtual void save();
     virtual void save_depth();
 
-    bool scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material);
+    bool scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Primitive> &out);
     virtual vec3f cast_ray(const PinholeCamera &, const RayInfo &, float &, size_t) { return vec3f(0, 0, 0); };
     virtual vec3f cast_ray(const LensCamera &, const RayInfo &, float &, size_t) { return vec3f(0, 0, 0); };
 

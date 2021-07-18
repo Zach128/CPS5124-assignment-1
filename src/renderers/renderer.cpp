@@ -22,7 +22,7 @@ void Renderer::prepare(const Scene &s) {
     depthbuffer = std::vector<float>(width * height);
 }
 
-bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Material> &material) {
+bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &dist, std::shared_ptr<Primitive> &out) {
     dist = std::numeric_limits<float>::max();
 
     // Iterate over each primitive.
@@ -30,11 +30,11 @@ bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &
         float dist_i;
 
         // If the primitive is hit, record it.
-        if (primitive->type == "geometric" && primitive->shape->ray_intersect(ray, dist_i) && dist_i <= dist) {
+        if (primitive->shape->ray_intersect(ray, dist_i) && dist_i <= dist) {
             dist = dist_i;
             hit = ray.orig + ray.dir * dist_i;
             N = (hit - primitive->shape->position).normalize();
-            material = primitive->material;
+            out = primitive;
         }
     }
 
@@ -55,11 +55,13 @@ void Renderer::compute_diffuse_intensity(const std::shared_ptr<Light> &light, co
     // Temp variables.
     vec3f shadow_hit, shadow_N;
     float shadow_dist;
-    std::shared_ptr<Material> tmpmaterial;
+    std::shared_ptr<Primitive> tmpprimitive;
 
     // Check if a ray from this point to the current light is obscured by another object. If so, skip this light.
-    if (scene_intersect(RayInfo(shadow_orig, light_dir), shadow_hit, shadow_N, shadow_dist, tmpmaterial) && (shadow_hit - shadow_orig).norm() < light_distance)
-        return;
+    if ((scene_intersect(RayInfo(shadow_orig, light_dir), shadow_hit, shadow_N, shadow_dist, tmpprimitive)))
+        // If we did hit something, make sure it's not an emissive light object. If it is, we will not be in shadow since it emits light.
+        if (tmpprimitive->type != "emissive" && (shadow_hit - shadow_orig).norm() < light_distance)
+            return;
 
     // Compute the specular intensity for this given light.
     out = out + light_intensity * std::max(0.f, dot(light_dir, N));

@@ -65,11 +65,11 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
 
 vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth = 0) {
     vec3f hit, N;
-    std::shared_ptr<Material> material;
+    std::shared_ptr<Primitive> primitive;
     vec3f total_color, diffuse_intensity, specular_intensity;
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
-    if(depth > max_depth || !scene_intersect(ray, hit, N, dist, material)) {
+    if(depth > max_depth || !scene_intersect(ray, hit, N, dist, primitive)) {
         // If we didn't hit anything, return only the background colour.
         return vec3f(0.2, 0.7, 0.8);
     }
@@ -80,17 +80,17 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray,
     for (std::shared_ptr<Light> light : lights) {
         compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
         // If the material is specular, calculate it's specular highlights.
-        if (material->type == "specular reflection" || material->type == "glossy reflection")
+        if (primitive->material->type == "specular reflection" || primitive->material->type == "glossy reflection")
             compute_specular_intensity(light, ray, hit, N, specular_intensity);
     }
 
     // Apply the intensity to the output vector.
-    total_color = total_color + material->get_diffuse() * diffuse_intensity;
+    total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity;
     // Add the new colour to the output.
-    total_color = total_color + (material->get_specular() + specular_intensity * SPEC_ALBEDO);
+    total_color = total_color + (primitive->material->get_specular() + specular_intensity * SPEC_ALBEDO);
 
-    if (material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, material, depth, total_color);
-    else if (material->type == "fresnel dielectric") compute_fresnel(camera, ray, hit, N, material, depth, total_color);
+    if (primitive->material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
+    else if (primitive->material->type == "fresnel dielectric") compute_fresnel(camera, ray, hit, N, primitive->material, depth, total_color);
 
     return total_color;
 }
