@@ -124,7 +124,7 @@ private:
                         std::out_of_range("Primitive " + primitive_id + " references material " + mat_id + ", but it was not found.\n");
                     }
 
-                    if (primitive_type == "emitter") {
+                    if (primitive_type == "emissive") {
                         std::string light_id = primitive.at("light").get<std::string>();
 
                         auto light_filter = [&light_id](const std::shared_ptr<Light> &light) { return light->id == light_id; };

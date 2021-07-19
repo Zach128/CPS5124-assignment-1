@@ -13,6 +13,7 @@
 #include "models/cameras/pinhole.hpp"
 #include "models/shapes/sphere.hpp"
 #include "models/lights/light.hpp"
+#include "models/lights/area-light.hpp"
 #include "models/lights/point-light.hpp"
 #include "models/primitives/primitive.hpp"
 #include "models/rays/ray-sampler.hpp"
@@ -78,6 +79,13 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray,
     dist = 1.f - dist / (1.f + dist);
 
     for (std::shared_ptr<Light> light : lights) {
+        // If it's our own light, we want it to be given a fixed intensity.
+        if (light->type == "area") {
+            if (std::dynamic_pointer_cast<AreaLight>(light)->shape_id == primitive->shape->id) {
+                diffuse_intensity = diffuse_intensity + light->intensity;
+            }
+        }
+
         compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
         // If the material is specular, calculate it's specular highlights.
         if (primitive->material->type == "specular reflection" || primitive->material->type == "glossy reflection")
