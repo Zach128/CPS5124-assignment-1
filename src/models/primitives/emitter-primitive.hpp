@@ -13,4 +13,8 @@ struct EmitterPrimitive : Primitive {
 
     EmitterPrimitive(const std::string &id, const std::string &type, const std::shared_ptr<Shape> &shape, const std::shared_ptr<Material> &material, const std::shared_ptr<AreaLight> &light)
         : Primitive(id, type, shape, material), light(light) {}
+
+    vec3f get_emittance() {
+        return light->intensity;
+    }
 };

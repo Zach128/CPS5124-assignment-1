@@ -26,7 +26,7 @@ Source code for my CPS5124 study unit assignment.
 
 ### Task 3
 - [ ] Extend the ray tracer to support the complex effects.
-    - [ ] Path tracer.
+    - [x] Path tracer.
     - [ ] Lens-based camera.
     - [x] Area Lights.
     - [x] Glossy and translucent surfaces.

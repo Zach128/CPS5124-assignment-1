@@ -30,10 +30,10 @@ bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &
         float dist_i;
 
         // If the primitive is hit, record it.
-        if (primitive->shape->ray_intersect(ray, dist_i) && dist_i <= dist) {
+        if (primitive->shape->ray_intersect(ray, dist_i) && dist_i <= dist && dist_i > 1e-6) {
             dist = dist_i;
             hit = ray.orig + ray.dir * dist_i;
-            N = (hit - primitive->shape->position).normalize();
+            primitive->shape->getSurfaceProperties(hit, N);
             out = primitive;
         }
     }

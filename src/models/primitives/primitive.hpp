@@ -18,4 +18,5 @@ struct Primitive : TypedElement {
           shape(shape),
           material(material) {}
 
+    virtual vec3f get_emittance() { return vec3f(0, 0, 0); }
 };

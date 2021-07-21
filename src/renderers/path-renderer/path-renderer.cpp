@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cstdlib>
+#include <random>
 
 #include "models/rays/ray.hpp"
 #include "models/scene.hpp"
@@ -13,11 +14,20 @@
 #include "models/cameras/pinhole.hpp"
 #include "models/shapes/sphere.hpp"
 #include "models/lights/light.hpp"
+#include "models/lights/area-light.hpp"
 #include "models/lights/point-light.hpp"
 #include "models/primitives/primitive.hpp"
 #include "models/rays/ray-sampler.hpp"
+#include "models/rays/ray.hpp"
 
 #include "path-renderer.hpp"
+
+// Helpers for random number generation
+static std::mt19937 mersenneTwister;
+static std::uniform_real_distribution<double> uniform;
+
+#define RND (2.0*uniform(mersenneTwister)-1.0)
+#define RND2 (uniform(mersenneTwister))
 
 #define MAX_RAY_DEPTH 20
 #define SPEC_ALBEDO 0.3
@@ -27,6 +37,29 @@
 static size_t max_depth = MAX_RAY_DEPTH;
 static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
+
+// given v1, set v2 and v3 so they form an orthonormal system
+// (we assume v1 is already normalized)
+void ons(const vec3f& v1, vec3f& v2, vec3f& v3) {
+    if (std::abs(v1.x) > std::abs(v1.y)) {
+		// project to the y = 0 plane and construct a normalized orthogonal vector in this plane
+		float invLen = 1.f / sqrtf(v1.x * v1.x + v1.z * v1.z);
+		v2 = vec3f(-v1.z * invLen, 0.0f, v1.x * invLen);
+    } else {
+		// project to the x = 0 plane and construct a normalized orthogonal vector in this plane
+		float invLen = 1.0f / sqrtf(v1.y * v1.y + v1.z * v1.z);
+		v2 = vec3f(0.0f, v1.z * invLen, -v1.y * invLen);
+    }
+    v3 = cross(v1, v2);
+}
+
+// Uniform sampling on a hemisphere to produce outgoing ray directions.
+// courtesy of http://www.rorydriscoll.com/2009/01/07/better-sampling/
+vec3f hemisphere(double u1, double u2) {
+	const double r = sqrt(1.0-u1*u1);
+	const double phi = 2 * PI * u2;
+	return vec3f(cos(phi)*r, sin(phi)*r, u1);
+}
 
 void PathRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Path Renderer" << std::endl;
@@ -44,54 +77,119 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
     RaySampler sampler = RaySampler(*camera, width, height, samples);
     size_t size = width * height;
 
-    #pragma omp parallel for
-    for (size_t i = 0; i < size; i++) {
-        size_t x = i % width;
-        size_t y = i / height;
+    std::shared_ptr<PinholeCamera> pCamera = std::dynamic_pointer_cast<PinholeCamera>(camera);
+    Halton hal, hal2;
+    hal.number(0, 2);
+    hal2.number(0, 2);
 
-        vec3f sample = vec3f(0, 0, 0);
-        std::vector<RayInfo> rays;
-        sampler.get_sample_rays(x, y, rays);
+    #pragma omp parallel for schedule(dynamic) // firstprivate(hal, hal2)
+    for (size_t x = 0; x < width; x++) {
+        fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
 
-        for (RayInfo &ray : rays) {
-            sample = sample + camera->renderer_cast_ray(*this, ray, depthbuffer[i]);
+        for(size_t y = 0; y < height; y++) {
+            size_t i = x + y * width;
+
+            vec3f sample = vec3f(0, 0, 0);
+            std::vector<RayInfo> rays;
+            sampler.get_sample_rays(x, y, rays);
+
+            for (RayInfo &ray : rays) {
+                sample = sample + cast_ray(*pCamera, ray, depthbuffer[i], 0);
+            }
+
+            framebuffer[i] = sample / samples;
         }
-
-        framebuffer[i] = sample / samples;
     }
 
     std::cout << "Done" << std::endl;
 }
 
-vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth = 0) {
+vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth) {
     vec3f hit, N;
     std::shared_ptr<Primitive> primitive;
 
-    vec3f total_color, diffuse_intensity, specular_intensity;
+    vec3f total_color;
+
+    // Russian roulette: starting at depth 5, each recursive step will stop with a probability of 0.1
+	double rrFactor = 1.0;
+	if (depth >= 5) {
+		const double rrStopProbability = 0.1;
+		if (RND2 <= rrStopProbability) {
+			return vec3f(0, 0, 0);
+		}
+		rrFactor = 1.0 / (1.0 - rrStopProbability);
+	}
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.
     if(depth > max_depth || !scene_intersect(ray, hit, N, dist, primitive)) {
         // If we didn't hit anything, return only the background colour.
-        return vec3f(0.2, 0.7, 0.8);
+        return vec3f();
     }
 
     // Record the depth value as an inverse reciprocal of the actual distance.
     dist = 1.f - dist / (1.f + dist);
 
-    for (std::shared_ptr<Light> light : lights) {
-        compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
-        // If the material is specular, calculate it's specular highlights.
-        if (primitive->material->type == "specular reflection" || primitive->material->type == "glossy reflection")
-            compute_specular_intensity(light, ray, hit, N, specular_intensity);
+    // Add the primitive's emittance in case it's an emissive primitive.
+    total_color = total_color + primitive->get_emittance() * 100 * primitive->material->get_diffuse() * rrFactor;
+
+    if (primitive->material->type == "diffuse" || primitive->material->type == "specular reflection") {
+        vec3f diffuse_intensity;
+        float tmp_dist;
+
+        // Compute the direct diffusion lighting.
+        for(std::shared_ptr<Light> light : lights) {
+            compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
+        }
+
+        // Apply the intensity to the output vector.
+        total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity * rrFactor;
+
+        // Compute the indirect diffusion lighting.
+        vec3f rotX, rotY;
+        ons(N, rotX, rotY);
+        // createCoordinateSystem(N, rotX, rotY);
+
+        // vec3f sampledDir = uniformSampleHemisphere(RND2, RND2);
+        vec3f sampledDir = hemisphere(RND2, RND2);
+        vec3f rotatedDir;
+
+        // Calculate the rotated coordinates.
+        rotatedDir.x = dot(vec3f(rotX.x, rotY.x, N.x), sampledDir);
+        rotatedDir.y = dot(vec3f(rotX.y, rotY.y, N.y), sampledDir);
+        rotatedDir.z = dot(vec3f(rotX.z, rotY.z, N.z), sampledDir);
+        RayInfo sampleRay(hit, rotatedDir); // Normally the direction would be normalised, but it's already been normalised.
+
+        double cost = dot(sampleRay.dir, N);
+        vec3f tmp = cast_ray(camera, sampleRay, tmp_dist, depth + 1);
+        total_color = total_color + (tmp * primitive->material->get_diffuse()) * cost * rrFactor;
+        // total_color = total_color + (tmp * primitive->material->get_diffuse()) * cost * 0.1 * rrFactor;
     }
 
-    // Apply the intensity to the output vector.
-    total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity;
-    // Add the new colour to the output.
-    total_color = total_color + (primitive->material->get_specular() + specular_intensity * SPEC_ALBEDO);
+    if (primitive->material->type == "specular reflection") {
+        vec3f specular_intensity;
 
-    if (primitive->material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
-    else if (primitive->material->type == "fresnel dielectric") compute_fresnel(camera, ray, hit, N, primitive->material, depth, total_color);
+        for(std::shared_ptr<Light> light : lights) {
+            compute_specular_intensity(light, ray, hit, N, specular_intensity);
+        }
+
+        total_color = total_color + specular_intensity * rrFactor;
+    }
+
+    if (primitive->material->type == "glossy reflection") {
+        vec3f glossy_intensity;
+
+        compute_glossy(camera, ray, hit, N, primitive->material, depth, glossy_intensity);
+
+        total_color = total_color + glossy_intensity * rrFactor;
+    }
+
+    if (primitive->material->type == "fresnel dielectric") {
+        vec3f fresnel_intensity;
+
+        compute_fresnel(camera, ray, hit, N, primitive->material, depth, fresnel_intensity);
+
+        total_color = total_color + fresnel_intensity * rrFactor;
+    }
 
     return total_color;
 }

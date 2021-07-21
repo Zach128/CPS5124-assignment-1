@@ -22,4 +22,5 @@ struct RayInfo
     vec3f dir;
 
     RayInfo(const vec3f &orig, const vec3f &dir) : orig(orig), dir(dir) {}
+    RayInfo() {}
 };

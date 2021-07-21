@@ -82,7 +82,7 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray,
         // If it's our own light, we want it to be given a fixed intensity.
         if (light->type == "area") {
             if (std::dynamic_pointer_cast<AreaLight>(light)->shape_id == primitive->shape->id) {
-                diffuse_intensity = diffuse_intensity + light->intensity;
+                diffuse_intensity = diffuse_intensity + light->intensity * primitive->material->get_diffuse();
             }
         }
 

@@ -4,6 +4,7 @@
 #include "models/materials/diffuse.hpp"
 #include "renderers/renderer.hpp"
 #include "models/primitives/primitive.hpp"
+#include "utils/utils.hpp"
 
 class PathRenderer : public Renderer {
 public:
@@ -16,7 +17,7 @@ public:
     void prepare(const Scene &scene);
     void render(const std::shared_ptr<Camera> &camera);
 
-    vec3f cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth);
+    vec3f cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth = 0);
 };
 
 void from_json(const json &j, PathRenderer &r);
