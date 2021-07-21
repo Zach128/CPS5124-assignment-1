@@ -57,7 +57,7 @@ void ons(const vec3f& v1, vec3f& v2, vec3f& v3) {
 // courtesy of http://www.rorydriscoll.com/2009/01/07/better-sampling/
 vec3f hemisphere(double u1, double u2) {
 	const double r = sqrt(1.0-u1*u1);
-	const double phi = 2 * PI * u2;
+	const double phi = 2 * M_PI * u2;
 	return vec3f(cos(phi)*r, sin(phi)*r, u1);
 }
 
@@ -75,14 +75,10 @@ void PathRenderer::prepare(const Scene &scene) {
 void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
     RaySampler sampler = RaySampler(*camera, width, height, samples);
-    size_t size = width * height;
 
     std::shared_ptr<PinholeCamera> pCamera = std::dynamic_pointer_cast<PinholeCamera>(camera);
-    Halton hal, hal2;
-    hal.number(0, 2);
-    hal2.number(0, 2);
 
-    #pragma omp parallel for schedule(dynamic) // firstprivate(hal, hal2)
+    #pragma omp parallel for schedule(dynamic)
     for (size_t x = 0; x < width; x++) {
         fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
 
