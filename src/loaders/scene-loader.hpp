@@ -135,7 +135,7 @@ private:
                         }
 
                         // Save the primitive record.
-                        primitives.push_back(std::make_shared<Primitive>(EmitterPrimitive(
+                        primitives.push_back(std::make_shared<EmitterPrimitive>(EmitterPrimitive(
                             primitive_id,
                             primitive_type,
                             found_shape[0],

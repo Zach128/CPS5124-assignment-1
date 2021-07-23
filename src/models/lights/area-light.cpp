@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <cmath>
 
 #include "models/shapes/sphere.hpp"
 #include "utils/utils.hpp"
@@ -14,7 +15,8 @@ void AreaLight::illuminate(const RayInfo &srcRay, const vec3f &hit, const vec3f 
         vec3f centerToRay = R * dot(lightDir, R) - lightDir;
         float distToCenter = centerToRay.norm();
 
-        vec3f closestPoint = lightDir + centerToRay * std::max(0.f, std::min(1.f, std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter));
+        vec3f closestPoint = lightDir + centerToRay * std::clamp(std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter, 0.f, 1.f);
+        // vec3f closestPoint = std::dynamic_pointer_cast<Sphere>(shape)->nearest_intersect(srcRay);
         // vec3f closestPoint = lightDir + centerToRay * std::dynamic_pointer_cast<Sphere>(shape)->radius / distToCenter;
 
         lightDir = (closestPoint - hit).normalize();

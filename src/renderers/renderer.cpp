@@ -26,7 +26,7 @@ bool Renderer::scene_intersect(const RayInfo &ray, vec3f &hit, vec3f &N, float &
     dist = std::numeric_limits<float>::max();
 
     // Iterate over each primitive.
-    for (std::shared_ptr<Primitive> primitive : primitives) {
+    for (std::shared_ptr<Primitive> &primitive : primitives) {
         float dist_i;
 
         // If the primitive is hit, record it.
@@ -134,9 +134,9 @@ void Renderer::save() {
     ofs << "P6\n" << width << " " << height << "\n255\n";
 
     for (int i = 0; i < width * height; i++) {
-        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].x)));
-        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].y)));
-        ofs << (char)(std::max(0.f, std::min(255.f, framebuffer[i].z)));
+        ofs << (char)(std::clamp(framebuffer[i].x, 0.f, 255.f));
+        ofs << (char)(std::clamp(framebuffer[i].y, 0.f, 255.f));
+        ofs << (char)(std::clamp(framebuffer[i].z, 0.f, 255.f));
     }
 
     ofs.close();
@@ -155,9 +155,9 @@ void Renderer::save_depth() {
     ofs << "P6\n" << width << " " << height << "\n255\n";
 
     for (int i = 0; i < width * height; i++) {
-        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
-        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
-        ofs << (char)(255.f * std::max(0.f, std::min(1.f, depthbuffer[i])));
+        ofs << (char)(255.f * std::clamp(depthbuffer[i], 0.f, 1.f));
+        ofs << (char)(255.f * std::clamp(depthbuffer[i], 0.f, 1.f));
+        ofs << (char)(255.f * std::clamp(depthbuffer[i], 0.f, 1.f));
     }
 
     ofs.close();
