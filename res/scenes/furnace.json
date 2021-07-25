@@ -32,10 +32,10 @@
   }],
 
   "lights" : [{
-    "id" : "point light",
-    "type" : "point",
-    "position" : [0, 4.0, 0],
-    "power" : [300, 300, 300]
+    "id" : "area light",
+    "type" : "area",
+    "shape" : "furnace",
+    "power" : [200, 200, 200]
   }],
 
   "scene" : {
@@ -48,14 +48,15 @@
       "material" : "grey diffuse"
     }, {
       "id" : "furnace",
-      "type" : "geometric",
+      "type" : "emissive",
       "shape" : "furnace",
+      "light" : "area light",
       "material" : "white diffuse"
     }],
     "renderer" : {
       "type" : "PT",
       "dimensions" : [512, 512],
-      "samples" : 8,
+      "samples" : 64,
       "depth" : 12,
       "output" : "../output/furnace.ppm"
     }

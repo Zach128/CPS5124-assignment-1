@@ -49,6 +49,10 @@ void Renderer::compute_diffuse_intensity(const std::shared_ptr<Light> &light, co
 
     light->illuminate(ray, hit, N, light_dir, light_intensity, light_distance);
 
+    compute_diffuse_intensity(light_dir, light_intensity, light_distance, ray, hit, N, out);
+}
+
+void Renderer::compute_diffuse_intensity(const vec3f &light_dir, const vec3f &light_intensity, const float &light_distance, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
     // Calculate shadows.
     // Offset the point to ensure it doesn't accidentally hit the same shape.
     vec3f shadow_orig = dot(light_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;

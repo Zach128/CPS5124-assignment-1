@@ -29,11 +29,12 @@ Source code for my CPS5124 study unit assignment.
     - [x] Path tracer.
     - [ ] Lens-based camera.
     - [x] Area Lights.
+        - [x] Soft shadows.
     - [x] Glossy and translucent surfaces.
     - [x] Create the following image estimators:
         - [x] Uniform random.
         - [x] Stratified sampling.
-    - [ ] Russian Roulette.
+    - [x] Russian Roulette.
 
 ### Task 4
 - [ ] Create demo scene to demonstrate progress.

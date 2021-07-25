@@ -18,6 +18,7 @@ public:
     void render(const std::shared_ptr<Camera> &camera);
 
     vec3f cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth = 0);
+    void compute_area_diffuse_intensity(const std::shared_ptr<AreaLight> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out);
 };
 
 void from_json(const json &j, PathRenderer &r);

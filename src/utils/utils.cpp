@@ -13,14 +13,12 @@ void createCoordinateSystem(const vec3f &N, vec3f &Nt, vec3f &Nb) {
     Nb = cross(N, Nt);
 }
 
-vec3f uniformSampleHemisphere(const float &r1, const float &r2) {
-    // cos(theta) = u1 = y
-    // cos^2(theta) + sin^2(theta) = 1 -> sin(theta) = srtf(1 - cos^2(theta))
-    float sinTheta = sqrtf(1 - r1 * r1);
-    float phi = 2 * M_PI * r2;
-    float x = sinTheta * cosf(phi);
-    float z = sinTheta * sinf(phi);
-    return vec3f(x, r1, z);
+// Uniform sampling on a hemisphere to produce outgoing ray directions.
+// courtesy of http://www.rorydriscoll.com/2009/01/07/better-sampling/
+vec3f uniformSampleHemisphere(const double u1, const double u2) {
+	const double r = sqrt(1.0-u1*u1);
+	const double phi = 2 * M_PI * u2;
+	return vec3f(cos(phi)*r, sin(phi)*r, u1);
 }
 
 bool solveQuadratic(const float &a, const float &b, const float &c, float &x0, float &x1) {

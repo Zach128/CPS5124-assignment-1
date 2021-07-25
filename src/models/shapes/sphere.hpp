@@ -19,8 +19,7 @@ public:
 
     bool ray_intersect(const RayInfo &ray, float &t0) const;
     void getSurfaceProperties( const vec3f &hitPoint, vec3f &hitNormal) const {
-        hitNormal = hitPoint - position;
-        hitNormal.normalize();
+        hitNormal = (hitPoint - position).normalize();
     }
 };
 

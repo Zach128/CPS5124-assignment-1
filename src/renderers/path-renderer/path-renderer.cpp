@@ -22,13 +22,6 @@
 
 #include "path-renderer.hpp"
 
-// Helpers for random number generation
-static std::mt19937 mersenneTwister;
-static std::uniform_real_distribution<double> uniform;
-
-#define RND (2.0*uniform(mersenneTwister)-1.0)
-#define RND2 (uniform(mersenneTwister))
-
 #define MAX_RAY_DEPTH 20
 #define SPEC_ALBEDO 0.3
 #define GLOSS_ALBEDO 0.8
@@ -37,29 +30,6 @@ static std::uniform_real_distribution<double> uniform;
 static size_t max_depth = MAX_RAY_DEPTH;
 static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
-
-// given v1, set v2 and v3 so they form an orthonormal system
-// (we assume v1 is already normalized)
-void ons(const vec3f& v1, vec3f& v2, vec3f& v3) {
-    if (std::abs(v1.x) > std::abs(v1.y)) {
-		// project to the y = 0 plane and construct a normalized orthogonal vector in this plane
-		float invLen = 1.f / sqrtf(v1.x * v1.x + v1.z * v1.z);
-		v2 = vec3f(-v1.z * invLen, 0.0f, v1.x * invLen);
-    } else {
-		// project to the x = 0 plane and construct a normalized orthogonal vector in this plane
-		float invLen = 1.0f / sqrtf(v1.y * v1.y + v1.z * v1.z);
-		v2 = vec3f(0.0f, v1.z * invLen, -v1.y * invLen);
-    }
-    v3 = cross(v1, v2);
-}
-
-// Uniform sampling on a hemisphere to produce outgoing ray directions.
-// courtesy of http://www.rorydriscoll.com/2009/01/07/better-sampling/
-vec3f hemisphere(double u1, double u2) {
-	const double r = sqrt(1.0-u1*u1);
-	const double phi = 2 * M_PI * u2;
-	return vec3f(cos(phi)*r, sin(phi)*r, u1);
-}
 
 void PathRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Path Renderer" << std::endl;
@@ -100,6 +70,51 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Done" << std::endl;
 }
 
+void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLight> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
+    if (light->shape->type == "sphere") {
+        std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(light->shape);
+        int sampleCount = 4;
+
+        vec3f lightIntensity = light->intensity;
+        vec3f lightPosition = sphere->position;
+        float radius = sphere->radius;
+
+        vec3f dirToCenter = (lightPosition - hit).normalOf();
+        vec3f rotX, rotY;
+
+        // Create a 3d matrix for converting from object space to world space.
+        createCoordinateSystem(dirToCenter, rotX, rotY);
+        vec3f rowX = vec3f(rotX.x, rotY.x, dirToCenter.x);
+        vec3f rowY = vec3f(rotX.y, rotY.y, dirToCenter.y);
+        vec3f rowZ = vec3f(rotX.z, rotY.z, dirToCenter.z);
+
+        vec3f total_intensity;
+
+        for(int scan = 0; scan < sampleCount; scan++) {
+            // Pick a random point on a hemisphere.
+            vec3f local = uniformSampleHemisphere(RND2, RND2);
+            // The normal of the picked point.
+            vec3f nwp;
+
+            // Transform the point so that it faces the incident hit point.
+            nwp.x = dot(rowX, local);
+            nwp.y = dot(rowY, local);
+            nwp.z = dot(rowZ, local);
+
+            // The actual point of the light in world-space.
+            vec3f pointInWorld = lightPosition - nwp * radius;
+            vec3f dirToPoint = (pointInWorld - hit).normalize();
+            float distToPoint = (pointInWorld - hit).norm();
+
+            compute_diffuse_intensity(dirToPoint, lightIntensity, distToPoint, ray, hit, N, total_intensity);
+        }
+
+        out = out + total_intensity / sampleCount;
+    } else {
+        compute_diffuse_intensity(light, ray, hit, N, out);
+    }
+}
+
 vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth) {
     vec3f hit, N;
     std::shared_ptr<Primitive> primitive;
@@ -126,7 +141,7 @@ vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, fl
     dist = 1.f - dist / (1.f + dist);
 
     // Add the primitive's emittance in case it's an emissive primitive.
-    total_color = total_color + primitive->get_emittance() * 100 * primitive->material->get_diffuse() * rrFactor;
+    total_color = total_color + primitive->get_emittance() * primitive->material->get_diffuse() * rrFactor;
 
     if (primitive->material->type == "diffuse" || primitive->material->type == "specular reflection") {
         vec3f diffuse_intensity;
@@ -134,7 +149,12 @@ vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, fl
 
         // Compute the direct diffusion lighting.
         for(std::shared_ptr<Light> light : lights) {
-            compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
+
+            if (light->type == "area") {
+                compute_area_diffuse_intensity(std::dynamic_pointer_cast<AreaLight>(light), ray, hit, N, diffuse_intensity);
+            } else {
+                compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
+            }
         }
 
         // Apply the intensity to the output vector.
@@ -142,11 +162,9 @@ vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, fl
 
         // Compute the indirect diffusion lighting.
         vec3f rotX, rotY;
-        ons(N, rotX, rotY);
-        // createCoordinateSystem(N, rotX, rotY);
+        createCoordinateSystem(N, rotX, rotY);
 
-        // vec3f sampledDir = uniformSampleHemisphere(RND2, RND2);
-        vec3f sampledDir = hemisphere(RND2, RND2);
+        vec3f sampledDir = uniformSampleHemisphere(RND2, RND2);
         vec3f rotatedDir;
 
         // Calculate the rotated coordinates.
