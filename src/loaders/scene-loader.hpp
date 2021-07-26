@@ -52,11 +52,13 @@ public:
             input >> j;
             input.close();
 
+            const std::vector<std::string> activeLightIds = j.at("scene").at("lights").get<std::vector<std::string>>();
+
             // Load all the properties of the scene.
             LoadCameras(j, cameras);
             LoadMaterials(j, materials);
             LoadShapes(j, shapes);
-            LoadLights(j, lights);
+            LoadLights(j, lights, activeLightIds);
             LoadPrimitives(j, primitives);
             LoadRenderer(j);
 

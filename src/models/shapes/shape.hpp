@@ -6,9 +6,6 @@
 
 using json = nlohmann::json;
 
-// Forward declare visitor class
-class Renderer;
-
 class Shape : public TypedElement {
 public:
     vec3f position;
