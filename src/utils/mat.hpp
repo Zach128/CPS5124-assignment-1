@@ -200,6 +200,16 @@ public:
         dst.z = c;
     }
 
+    template<typename S>
+    vec3f multDirMatrix(const vec<3, S> &src) const
+    {
+        return vec3f(
+            src[0] * x[0][0] + src[1] * x[1][0] + src[2] * x[2][0],
+            src[0] * x[0][1] + src[1] * x[1][1] + src[2] * x[2][1],
+            src[0] * x[0][2] + src[1] * x[1][2] + src[2] * x[2][2]
+        );
+    }
+
     Matrix44 inverse() const
     {
         int i, j, k;

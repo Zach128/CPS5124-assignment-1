@@ -42,7 +42,7 @@ void WhittedRenderer::prepare(const Scene &scene) {
 
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
-    RaySampler sampler = RaySampler(*camera, width, height, samples);
+    RaySampler sampler = RaySampler(camera, width, height, samples);
     size_t size = width * height;
 
     #pragma omp parallel for schedule(dynamic)

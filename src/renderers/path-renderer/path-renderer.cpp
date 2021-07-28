@@ -44,7 +44,7 @@ void PathRenderer::prepare(const Scene &scene) {
 
 void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
-    RaySampler sampler = RaySampler(*camera, width, height, samples);
+    RaySampler sampler = RaySampler(camera, width, height, samples);
 
     std::shared_ptr<PinholeCamera> pCamera = std::dynamic_pointer_cast<PinholeCamera>(camera);
 
@@ -57,7 +57,11 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
 
             vec3f sample = vec3f(0, 0, 0);
             std::vector<RayInfo> rays;
-            sampler.get_sample_rays(x, y, rays);
+            if (camera->type == "lens-based") {
+                sampler.get_stratified_lens_rays(x, y, rays);
+            } else {
+                sampler.get_sample_rays(x, y, rays);
+            }
 
             for (RayInfo &ray : rays) {
                 sample = sample + cast_ray(*pCamera, ray, depthbuffer[i], 0);
