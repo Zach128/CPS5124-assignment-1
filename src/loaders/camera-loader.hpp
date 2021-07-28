@@ -4,6 +4,7 @@
 #include "utils/vec.hpp"
 #include "models/cameras/camera.hpp"
 #include "models/cameras/pinhole.hpp"
+#include "models/cameras/lens-camera.hpp"
 
 using json = nlohmann::json;
 
@@ -36,6 +37,8 @@ void LoadCameras(const json &j, std::vector<std::shared_ptr<Camera>> &cameras) {
         for (json cam : j.at("cameras")) {
             if (cam.at("type") == "pinhole") {
                 cameras.push_back(cam.get<std::shared_ptr<PinholeCamera>>());
+            } else if (cam.at("type") == "lens-based") {
+                cameras.push_back(cam.get<std::shared_ptr<LensCamera>>());
             } else {
                 cameras.push_back(cam.get<std::shared_ptr<Camera>>());
             }

@@ -15,18 +15,20 @@ public:
     std::vector<std::shared_ptr<Light>> lights;
     std::vector<std::shared_ptr<Primitive>> primitives;
     std::shared_ptr<Renderer> renderer;
+    std::string selectedCamera;
 
-    Scene(const std::vector<std::shared_ptr<Camera>> &cameras, const std::vector<std::shared_ptr<Material>> &materials, const std::vector<std::shared_ptr<Shape>> &shapes, const std::vector<std::shared_ptr<Light>> &lights, const std::shared_ptr<Renderer> &renderer, const std::vector<std::shared_ptr<Primitive>> &primitives)
+    Scene(const std::vector<std::shared_ptr<Camera>> &cameras, const std::vector<std::shared_ptr<Material>> &materials, const std::vector<std::shared_ptr<Shape>> &shapes, const std::vector<std::shared_ptr<Light>> &lights, const std::shared_ptr<Renderer> &renderer, const std::vector<std::shared_ptr<Primitive>> &primitives, const std::string &selectedCamera)
         : cameras(cameras),
           materials(materials),
           shapes(shapes),
           lights(lights),
           primitives(primitives),
-          renderer(renderer) {}
+          renderer(renderer),
+          selectedCamera(selectedCamera) {}
 
     Scene() {}
 
     void prepare();
-    void render(const int &cam_id);
+    void render();
     void save();
 };

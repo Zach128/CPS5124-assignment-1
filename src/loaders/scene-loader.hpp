@@ -53,6 +53,7 @@ public:
             input.close();
 
             const std::vector<std::string> activeLightIds = j.at("scene").at("lights").get<std::vector<std::string>>();
+            const std::string selectedCamera = j.at("scene").at("camera").get<std::string>();
 
             // Load all the properties of the scene.
             LoadCameras(j, cameras);
@@ -64,7 +65,7 @@ public:
 
             AssignShapesToAreaLights();
 
-            scene = Scene(cameras, materials, shapes, lights, renderer, primitives);
+            scene = Scene(cameras, materials, shapes, lights, renderer, primitives, selectedCamera);
         } else {
             std::cerr << "Failed to load " << file_name << std::endl;
         }

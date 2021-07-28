@@ -14,7 +14,7 @@ int main() {
     loader.LoadSceneFile("assignment_03.json", s);
 
     s.prepare();
-    s.render(0);
+    s.render();
 
     // BoxBlur blurer = BoxBlur((size_t) s.renderer->width, (size_t) s.renderer->height);
     // SigmoidalToneMapper sigTone = SigmoidalToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
