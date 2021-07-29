@@ -1,12 +1,15 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <filesystem>
 
 #include "utils/vec.hpp"
 #include "utils/utils.hpp"
 #include "models/scene.hpp"
 #include "models/lights/light.hpp"
 #include "renderers/renderer.hpp"
+
+namespace fs = std::filesystem;
 
 #define SPEC_SHINE 16
 
@@ -129,12 +132,42 @@ vec3f Renderer::compute_refraction(const PinholeCamera &camera, const RayInfo &s
     return cast_ray(camera, RayInfo(refract_orig, refract_dir), refract_dist, depth + 1);
 }
 
+void Renderer::get_paths(const std::string &filePath, fs::path &renderPath, fs::path &depthPath) {
+    renderPath = fs::path(filePath);
+
+    // Check to ensure the output path exists.
+    if (!fs::exists("res/output")) fs::create_directory("res/output");
+
+    // Change the current directory to the output path.
+    fs::current_path("res/output");
+
+    depthPath = fs::path(renderPath);
+    depthPath = depthPath.replace_filename(depthPath.stem().concat("-depth")).replace_extension(renderPath.extension());
+
+
+    std::cout << renderPath.relative_path() << std::endl;
+    std::cout << renderPath << std::endl;
+    std::cout << depthPath << std::endl;
+}
+
 void Renderer::save() {
     std::cout << "Saving final result..." << std::endl;
 
     std::ofstream ofs;
+    fs::path renderPath, depthPath;
 
-    ofs.open("./out.ppm");
+    get_paths(output, renderPath, depthPath);
+
+    save_framebuffer(renderPath);
+    save_depth(depthPath);
+}
+
+void Renderer::save_framebuffer(const fs::path &path) {
+    std::cout << "Saving framebuffer..." << std::endl;
+
+    std::ofstream ofs;
+
+    ofs.open(path);
     ofs << "P6\n" << width << " " << height << "\n255\n";
 
     for (int i = 0; i < width * height; i++) {
@@ -146,16 +179,14 @@ void Renderer::save() {
     ofs.close();
 
     std::cout << "Done" << std::endl;
-
-    save_depth();
 }
 
-void Renderer::save_depth() {
+void Renderer::save_depth(const fs::path &path) {
     std::cout << "Saving depth buffer..." << std::endl;
 
     std::ofstream ofs;
 
-    ofs.open("./out-depth.ppm");
+    ofs.open(path);
     ofs << "P6\n" << width << " " << height << "\n255\n";
 
     for (int i = 0; i < width * height; i++) {
