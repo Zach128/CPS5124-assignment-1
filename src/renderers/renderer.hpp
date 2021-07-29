@@ -22,9 +22,17 @@ class PinholeCamera;
 class LensCamera;
 class Scene;
 
+enum RendererType { RENDERER_NONE = -1, RENDERER_WHITTED, RENDERER_PATH };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(RendererType, {
+    { RENDERER_NONE, nullptr},
+    { RENDERER_WHITTED, "WRT" },
+    { RENDERER_PATH, "PT" }
+})
+
 class Renderer {
 public:
-    std::string type;
+    RendererType type;
     std::string output;
     int width;
     int height;
@@ -34,7 +42,7 @@ public:
     std::vector<vec3f> framebuffer;
     std::vector<float> depthbuffer;
 
-    Renderer(const std::string &type, const std::string &output, const vec2i &dimensions, const int samples, const size_t depth) : type(type), output(output), width(dimensions.x), height(dimensions.y), samples(samples), depth(depth) {}
+    Renderer(const RendererType type, const std::string &output, const vec2i &dimensions, const int samples, const size_t depth) : type(type), output(output), width(dimensions.x), height(dimensions.y), samples(samples), depth(depth) {}
     Renderer() {}
     ~Renderer() {}
 

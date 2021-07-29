@@ -78,7 +78,7 @@ vec3f WhittedRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float 
 
     for (std::shared_ptr<Light> light : lights) {
         // If it's our own light, we want it to be given a fixed intensity.
-        if (light->type == "area") {
+        if (light->type == LightType::LIGHT_AREA) {
             if (std::dynamic_pointer_cast<AreaLight>(light)->shape_id == primitive->shape->id) {
                 diffuse_intensity = diffuse_intensity + light->intensity * primitive->material->get_diffuse();
             }
@@ -86,7 +86,7 @@ vec3f WhittedRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float 
 
         compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
         // If the material is specular, calculate it's specular highlights.
-        if (primitive->material->type == "specular reflection" || primitive->material->type == "glossy reflection")
+        if (primitive->material->type == MaterialType::MATERIAL_SPECULAR)
             compute_specular_intensity(light, ray, hit, N, specular_intensity);
     }
 
@@ -94,8 +94,8 @@ vec3f WhittedRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float 
     total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity;
     total_color = total_color + (primitive->material->get_specular() + specular_intensity * SPEC_ALBEDO);
 
-    if (primitive->material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
-    else if (primitive->material->type == "fresnel dielectric") compute_fresnel(camera, ray, hit, N, primitive->material, depth, total_color);
+    if (primitive->material->type == MaterialType::MATERIAL_GLOSSY) compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
+    else if (primitive->material->type == MaterialType::MATERIAL_FRESNEL) compute_fresnel(camera, ray, hit, N, primitive->material, depth, total_color);
 
     return total_color;
 }

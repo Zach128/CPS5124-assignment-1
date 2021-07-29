@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <random>
 
+#include "models/shapes/shape.hpp"
 #include "models/rays/ray.hpp"
 #include "models/scene.hpp"
 #include "utils/vec.hpp"
@@ -70,7 +71,7 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
 }
 
 void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLight> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
-    if (light->shape->type == "sphere") {
+    if (light->shape->type == ShapeType::SHAPE_SPHERE) {
         std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(light->shape);
         int sampleCount = 4;
 
@@ -142,14 +143,14 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
     // Add the primitive's emittance in case it's an emissive primitive.
     total_color = total_color + primitive->get_emittance() * primitive->material->get_diffuse() * rrFactor;
 
-    if (primitive->material->type == "diffuse" || primitive->material->type == "specular reflection") {
+    if (primitive->material->type == MaterialType::MATERIAL_DIFFUSE || primitive->material->type == MaterialType::MATERIAL_SPECULAR) {
         vec3f diffuse_intensity;
         float tmp_dist;
 
         // Compute the direct diffusion lighting.
         for(std::shared_ptr<Light> light : lights) {
 
-            if (light->type == "area") {
+            if (light->type == LightType::LIGHT_AREA) {
                 compute_area_diffuse_intensity(std::dynamic_pointer_cast<AreaLight>(light), ray, hit, N, diffuse_intensity);
             } else {
                 compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
@@ -178,7 +179,7 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
         // total_color = total_color + (tmp * primitive->material->get_diffuse()) * cost * 0.1 * rrFactor;
     }
 
-    if (primitive->material->type == "specular reflection") {
+    if (primitive->material->type == MaterialType::MATERIAL_SPECULAR) {
         vec3f specular_intensity;
 
         for(std::shared_ptr<Light> light : lights) {
@@ -188,7 +189,7 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
         total_color = total_color + specular_intensity * rrFactor;
     }
 
-    if (primitive->material->type == "glossy reflection") {
+    if (primitive->material->type == MaterialType::MATERIAL_GLOSSY) {
         vec3f glossy_intensity;
 
         compute_glossy(camera, ray, hit, N, primitive->material, depth, glossy_intensity);
@@ -196,7 +197,7 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
         total_color = total_color + glossy_intensity * rrFactor;
     }
 
-    if (primitive->material->type == "fresnel dielectric") {
+    if (primitive->material->type == MaterialType::MATERIAL_FRESNEL) {
         vec3f fresnel_intensity;
 
         compute_fresnel(camera, ray, hit, N, primitive->material, depth, fresnel_intensity);

@@ -8,8 +8,8 @@
 
 class PathRenderer : public Renderer {
 public:
-    PathRenderer(const std::string &type, const std::string &output, const vec2i &dimensions, int samples, int depth)
-        : Renderer(type, output, dimensions, samples, depth) {}
+    PathRenderer(const std::string &output, const vec2i &dimensions, int samples, int depth)
+        : Renderer(RendererType::RENDERER_PATH, output, dimensions, samples, depth) {}
 
     PathRenderer() : Renderer() {}
     ~PathRenderer() {}

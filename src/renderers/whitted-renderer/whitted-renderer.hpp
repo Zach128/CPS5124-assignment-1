@@ -7,8 +7,8 @@
 
 class WhittedRenderer : public Renderer {
 public:
-    WhittedRenderer(const std::string &type, const std::string &output, const vec2i &dimensions, int samples, int depth)
-        : Renderer(type, output, dimensions, samples, depth) {}
+    WhittedRenderer(const std::string &output, const vec2i &dimensions, int samples, int depth)
+        : Renderer(RendererType::RENDERER_WHITTED, output, dimensions, samples, depth) {}
 
     WhittedRenderer() : Renderer() {}
     ~WhittedRenderer() {}
