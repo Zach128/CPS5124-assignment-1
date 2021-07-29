@@ -18,11 +18,11 @@ void RaySampler::get_uniform_sample_rays(const size_t x, const size_t y, std::ve
 
     for (size_t j = 0; j < samples; j++) {
         // Calculate a uniform sample offset.
-        float sx = pixelWidth * RND;
-        float sy = pixelHeight * RND;
+        float sx = pixelWidth * RND2;
+        float sy = pixelHeight * RND2;
 
-        float u = (x + sx) / (frameWidth - 1.f);
-        float v = (y + sy) / (frameHeight - 1.f);
+        float u = x / (frameWidth - 1.f) + sx;
+        float v = y / (frameHeight - 1.f) + sy;
 
         // Convert the pixel coordinates to world coordinates.
         worldDir = blCorner + horiz * u + vert * v - camera->position;
@@ -44,8 +44,8 @@ void RaySampler::get_stratified_sample_rays(const size_t x, const size_t y, std:
         sx = (pixelWidth / e) * (fmod(j, e) + sx);
         sy = (pixelHeight / e) * (j / e + sy);
 
-        float u = (x + sx) / (frameWidth - 1.f);
-        float v = (y + sy) / (frameHeight - 1.f);
+        float u = x / (frameWidth - 1.f) + sx;
+        float v = y / (frameHeight - 1.f) + sy;
 
         // Convert the pixel coordinates to world coordinates.
         worldDir = blCorner + horiz * u + vert * v - camera->position;
