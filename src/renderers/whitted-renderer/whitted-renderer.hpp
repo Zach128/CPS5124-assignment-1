@@ -16,7 +16,7 @@ public:
     void prepare(const Scene &scene);
     void render(const std::shared_ptr<Camera> &camera);
 
-    vec3f cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth);
+    vec3f cast_ray(const Camera &camera, const RayInfo &ray, float &dist, size_t depth);
 };
 
 void from_json(const json &j, WhittedRenderer &r);

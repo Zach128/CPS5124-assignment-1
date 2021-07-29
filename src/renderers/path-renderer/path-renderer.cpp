@@ -46,14 +46,12 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
     RaySampler sampler = RaySampler(camera, width, height, samples);
 
-    std::shared_ptr<PinholeCamera> pCamera = std::dynamic_pointer_cast<PinholeCamera>(camera);
-
     #pragma omp parallel for schedule(dynamic)
-    for (size_t x = 0; x < width; x++) {
+    for (int x = 0; x < width; x++) {
         fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
 
-        for(size_t y = 0; y < height; y++) {
-            size_t i = x + y * width;
+        for(int y = 0; y < height; y++) {
+            int i = x + y * width;
 
             vec3f sample = vec3f(0, 0, 0);
             std::vector<RayInfo> rays;
@@ -61,7 +59,7 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
             sampler.get_sample_rays(x, y, rays);
 
             for (RayInfo &ray : rays) {
-                sample = sample + cast_ray(*pCamera, ray, depthbuffer[i], 0);
+                sample = sample + cast_ray(*camera, ray, depthbuffer[i], 0);
             }
 
             framebuffer[i] = sample / samples;
@@ -116,7 +114,7 @@ void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLigh
     }
 }
 
-vec3f PathRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth) {
+vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &dist, size_t depth) {
     vec3f hit, N;
     std::shared_ptr<Primitive> primitive;
 

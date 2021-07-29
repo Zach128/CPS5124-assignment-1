@@ -87,14 +87,14 @@ void Renderer::compute_specular_intensity(const std::shared_ptr<Light> &light, c
     out = out + light_intensity * powf(ray_intensity, SPEC_SHINE);
 }
 
-void Renderer::compute_glossy(const PinholeCamera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
+void Renderer::compute_glossy(const Camera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
     // Cast a reflection off the shape to determine the reflection.
     vec3f reflect_color = compute_reflection(camera, ray, hit, N, depth);
 
     out = out + reflect_color * (1 - material->get_roughness());
 }
 
-void Renderer::compute_fresnel(const PinholeCamera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
+void Renderer::compute_fresnel(const Camera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {
     vec3f refract_color, reflect_color;
     float kr, kt;
 
@@ -114,7 +114,7 @@ void Renderer::compute_fresnel(const PinholeCamera &camera, const RayInfo &ray, 
     out = out + refract_color * kt + reflect_color * kr;
 }
 
-vec3f Renderer::compute_reflection(const PinholeCamera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, size_t &depth) {
+vec3f Renderer::compute_reflection(const Camera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, size_t &depth) {
     // Simulate reflection.
     float reflect_dist;
     vec3f reflect_dir = reflect(srcRay.dir, N).normalize();
@@ -123,7 +123,7 @@ vec3f Renderer::compute_reflection(const PinholeCamera &camera, const RayInfo &s
     return cast_ray(camera, RayInfo(reflect_orig, reflect_dir), reflect_dist, depth + 1);
 }
 
-vec3f Renderer::compute_refraction(const PinholeCamera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> material, size_t &depth) {
+vec3f Renderer::compute_refraction(const Camera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> material, size_t &depth) {
     // Simulate transmission.
     float refract_dist;
     vec3f refract_dir = refract(srcRay.dir, N, material->get_eta()).normalize();

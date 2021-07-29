@@ -10,7 +10,6 @@
 #include "utils/utils.hpp"
 #include "utils/mat.hpp"
 #include "models/cameras/camera.hpp"
-#include "models/cameras/pinhole.hpp"
 #include "models/shapes/sphere.hpp"
 #include "models/lights/light.hpp"
 #include "models/lights/area-light.hpp"
@@ -27,13 +26,11 @@
 
 static size_t max_depth = MAX_RAY_DEPTH;
 static std::vector<std::shared_ptr<Light>> lights;
-static std::vector<std::shared_ptr<Primitive>> primitives;
 
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
     lights = scene.lights;
-    primitives = scene.primitives;
     max_depth = std::min(max_depth, depth);
 
     // Initialise frame buffers.
@@ -43,7 +40,6 @@ void WhittedRenderer::prepare(const Scene &scene) {
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
     RaySampler sampler = RaySampler(camera, width, height, samples);
-    size_t size = width * height;
 
     #pragma omp parallel for schedule(dynamic)
     for(int x = 0; x < width; x++) {
@@ -66,7 +62,7 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Done" << std::endl;
 }
 
-vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray, float &dist, size_t depth = 0) {
+vec3f WhittedRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &dist, size_t depth = 0) {
     vec3f hit, N;
     std::shared_ptr<Primitive> primitive;
     vec3f total_color, diffuse_intensity, specular_intensity;
@@ -94,9 +90,8 @@ vec3f WhittedRenderer::cast_ray(const PinholeCamera &camera, const RayInfo &ray,
             compute_specular_intensity(light, ray, hit, N, specular_intensity);
     }
 
-    // Apply the intensity to the output vector.
+    // Apply the diffuse and specular intensities accordingly.
     total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity;
-    // Add the new colour to the output.
     total_color = total_color + (primitive->material->get_specular() + specular_intensity * SPEC_ALBEDO);
 
     if (primitive->material->type == "glossy reflection") compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
