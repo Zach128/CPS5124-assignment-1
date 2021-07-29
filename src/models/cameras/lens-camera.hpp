@@ -12,7 +12,7 @@ struct LensCamera : Camera {
     float alpha;
 
     LensCamera(const std::string &id, const float focal_distance, const float alpha, const float fov, const float aspect, const float distance, const vec3f &position, const vec3f &target)
-        : Camera(id, "lens-based", fov, aspect, distance, position, target), focal_distance(focal_distance), alpha(alpha) {}
+        : Camera(id, CameraType::CAMERA_LENS, fov, aspect, distance, position, target), focal_distance(focal_distance), alpha(alpha) {}
 
     LensCamera() : Camera() {}
 

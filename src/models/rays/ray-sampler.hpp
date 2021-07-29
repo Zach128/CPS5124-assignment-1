@@ -45,7 +45,7 @@ public:
         viewportWidth = camera->aspect * viewportHeight;
 
         // Generate the coordinate system with or without thin lens approximation in mind.
-        if (camera->type == "lens-based") {
+        if (camera->type == CameraType::CAMERA_LENS) {
             float focalDistance = std::dynamic_pointer_cast<LensCamera>(camera)->focal_distance;
 
             horiz = U * viewportWidth * focalDistance;

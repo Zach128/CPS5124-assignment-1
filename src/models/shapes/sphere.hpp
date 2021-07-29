@@ -13,7 +13,8 @@ class Sphere : public Shape {
 public:
     float radius;
 
-    Sphere(const std::string &id, const std::string &type, const vec3f &position, const float radius) : Shape(id, type, position), radius(radius) {}
+    Sphere(const std::string &id, const vec3f &position, const float radius)
+        : Shape(id, ShapeType::SHAPE_SPHERE, position), radius(radius) {}
     Sphere() : Shape() {}
     ~Sphere() {}
 

@@ -1,16 +1,25 @@
 #pragma once
 #include <iostream>
 #include "utils/vec.hpp"
-#include "models/object.hpp"
 #include "models/rays/ray.hpp"
 
 using json = nlohmann::json;
 
-class Shape : public TypedElement {
+enum ShapeType { SHAPE_NONE = 0, SHAPE_SPHERE };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(ShapeType, {
+    { SHAPE_NONE, nullptr},
+    { SHAPE_SPHERE, "sphere" }
+})
+
+class Shape {
 public:
+    std::string id;
+    ShapeType type;
     vec3f position;
 
-    Shape(const std::string &id, const std::string &type, const vec3f &position) : TypedElement(id, type), position(position) {}
+    Shape(const std::string &id, const ShapeType type, const vec3f &position)
+        : id(id), type(type), position(position) {}
     Shape() {}
     ~Shape() {}
 

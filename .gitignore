@@ -43,6 +43,7 @@ Makefile
 # Outputs
 out.ppm
 out-depth.ppm
+*.ppm
 
 # Submodules
 lib/json

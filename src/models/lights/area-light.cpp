@@ -9,7 +9,7 @@
 #include "area-light.hpp"
 
 void AreaLight::illuminate(const RayInfo &srcRay, const vec3f &hit, const vec3f &N, vec3f &lightDir, vec3f &lightIntensity, float &distance) const {
-    if (shape->type == "sphere") {
+    if (shape->type == ShapeType::SHAPE_SPHERE) {
         lightDir = (shape->position - hit).normalize();
         vec3f R = reflect(srcRay.dir, N);
         vec3f centerToRay = R * dot(lightDir, R) - lightDir;

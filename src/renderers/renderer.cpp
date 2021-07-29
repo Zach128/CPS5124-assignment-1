@@ -55,7 +55,7 @@ void Renderer::compute_diffuse_intensity(const std::shared_ptr<Light> &light, co
     compute_diffuse_intensity(light_dir, light_intensity, light_distance, ray, hit, N, out);
 }
 
-void Renderer::compute_diffuse_intensity(const vec3f &light_dir, const vec3f &light_intensity, const float &light_distance, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
+void Renderer::compute_diffuse_intensity(const vec3f &light_dir, const vec3f &light_intensity, const float &light_distance, const RayInfo &, const vec3f &hit, const vec3f &N, vec3f &out) {
     // Calculate shadows.
     // Offset the point to ensure it doesn't accidentally hit the same shape.
     vec3f shadow_orig = dot(light_dir, N) < 0 ? hit - N * 1e-3 : hit + N * 1e-3;
@@ -67,7 +67,7 @@ void Renderer::compute_diffuse_intensity(const vec3f &light_dir, const vec3f &li
     // Check if a ray from this point to the current light is obscured by another object. If so, skip this light.
     if ((scene_intersect(RayInfo(shadow_orig, light_dir), shadow_hit, shadow_N, shadow_dist, tmpprimitive)))
         // If we did hit something, make sure it's not an emissive light object. If it is, we will not be in shadow since it emits light.
-        if (tmpprimitive->type != "emissive" && (shadow_hit - shadow_orig).norm() < light_distance)
+        if (tmpprimitive->type != PrimitiveType::PRIMITIVE_EMISSIVE && (shadow_hit - shadow_orig).norm() < light_distance)
             return;
 
     // Compute the specular intensity for this given light.

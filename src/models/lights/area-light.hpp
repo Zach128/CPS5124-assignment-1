@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "models/object.hpp"
 #include "models/shapes/shape.hpp"
 #include "utils/vec.hpp"
 #include "models/lights/light.hpp"
@@ -10,8 +9,8 @@ struct AreaLight : Light {
     std::string shape_id;
     std::shared_ptr<Shape> shape;
 
-    AreaLight(const std::string &id, const std::string &type, const std::string &shape_id, const vec3f &intensity)
-        : Light(id, type, intensity), shape_id(shape_id) {}
+    AreaLight(const std::string &id, const std::string &shape_id, const vec3f &intensity)
+        : Light(id, LightType::LIGHT_AREA, intensity), shape_id(shape_id) {}
 
     AreaLight() {}
 

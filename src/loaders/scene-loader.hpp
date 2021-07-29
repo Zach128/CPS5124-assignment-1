@@ -75,7 +75,7 @@ private:
     void AssignShapesToAreaLights() {
 
         for(std::shared_ptr<Light> light : lights) {
-            if (light->type == "area") {
+            if (light->type == LightType::LIGHT_AREA) {
                 std::shared_ptr<AreaLight> areaLight = std::dynamic_pointer_cast<AreaLight>(light);
                 std::string shape_id = areaLight->shape_id;
 
@@ -111,7 +111,7 @@ private:
                     primitive.at("material").get_to<std::string>(mat_id);
 
                     std::string primitive_id = primitive.at("id").get<std::string>();
-                    std::string primitive_type = primitive.at("type").get<std::string>();
+                    PrimitiveType primitive_type = primitive.at("type").get<PrimitiveType>();
 
                     // Search for the material and shape.
                     auto found_shape = std::find_if(shapes.begin(), shapes.end(), shape_filter);
@@ -127,7 +127,7 @@ private:
                         std::out_of_range("Primitive " + primitive_id + " references material " + mat_id + ", but it was not found.\n");
                     }
 
-                    if (primitive_type == "emissive") {
+                    if (primitive_type == PrimitiveType::PRIMITIVE_EMISSIVE) {
                         std::string light_id = primitive.at("light").get<std::string>();
 
                         auto light_filter = [&light_id](const std::shared_ptr<Light> &light) { return light->id == light_id; };
@@ -140,7 +140,6 @@ private:
                         // Save the primitive record.
                         primitives.push_back(std::make_shared<EmitterPrimitive>(EmitterPrimitive(
                             primitive_id,
-                            primitive_type,
                             found_shape[0],
                             found_mat[0],
                             std::dynamic_pointer_cast<AreaLight>(found_light[0])
@@ -163,9 +162,9 @@ private:
         const json &r = j.at("scene").at("renderer");
 
         if (!r.empty()) {
-            if (r.at("type").get<std::string>() == "WRT") {
+            if (r.at("type") == "WRT") {
                 renderer = r.get<std::shared_ptr<WhittedRenderer>>();
-            } else if (r.at("type").get<std::string>() == "PT") {
+            } else if (r.at("type") == "PT") {
                 renderer = r.get<std::shared_ptr<PathRenderer>>();
             } else {
                 renderer = r.get<std::shared_ptr<Renderer>>();

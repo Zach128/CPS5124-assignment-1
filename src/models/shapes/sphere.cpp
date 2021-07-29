@@ -32,7 +32,9 @@ void from_json(const json &j, std::shared_ptr<Sphere> &s) {
     s = std::make_shared<Sphere>();
 
     j.at("id").get_to(s->id);
+
     j.at("type").get_to(s->type);
+
     j.at("radius").get_to(s->radius);
     s->position = vec3f(j.at("centre").get<std::vector<float>>().data());
 }

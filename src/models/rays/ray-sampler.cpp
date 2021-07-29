@@ -9,7 +9,7 @@
 
 void RaySampler::get_sample_rays(const size_t x, const size_t y, std::vector<RayInfo> &rays) {
     if (method == UNIFORM) get_uniform_sample_rays(x, y, rays);
-    else if (camera->type == "lens-based") get_stratified_lens_rays(x, y, rays);
+    else if (camera->type == CameraType::CAMERA_LENS) get_stratified_lens_rays(x, y, rays);
     else get_stratified_sample_rays(x, y, rays);
 }
 

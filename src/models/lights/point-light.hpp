@@ -1,14 +1,13 @@
 #pragma once
 #include <iostream>
-#include "models/object.hpp"
 #include "utils/vec.hpp"
 #include "models/lights/light.hpp"
 
 struct PointLight : Light {
     vec3f position;
 
-    PointLight(const std::string &id, const std::string &type, const vec3f &position, const vec3f &intensity)
-        : Light(id, type, intensity), position(position) {}
+    PointLight(const std::string &id, const vec3f &position, const vec3f &intensity)
+        : Light(id, LightType::LIGHT_POINT, intensity), position(position) {}
 
     PointLight() {}
 

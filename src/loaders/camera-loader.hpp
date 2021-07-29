@@ -8,24 +8,18 @@
 
 using json = nlohmann::json;
 
-Camera LoadCamera(const json &j) {
-    Camera c;
-
-    if (j["type"] == "pinhole") {
-        c = j.get<PinholeCamera>();
-    } else {
-        c = j.get<Camera>();
-    }
-
-    return c;
-}
-
 void LoadCameras(const json &j, std::vector<Camera> &cameras) {
     cameras = std::vector<Camera>();
 
     if (!j["cameras"].empty()) {
         for (json raw_cam : j["cameras"]) {
-            cameras.push_back(LoadCamera(raw_cam));
+            if (raw_cam.at("type") == "pinhole") {
+                cameras.push_back(raw_cam.get<PinholeCamera>());
+            } else if (raw_cam.at("type") == "lens-based") {
+                cameras.push_back(raw_cam.get<LensCamera>());
+            } else {
+                cameras.push_back(raw_cam.get<Camera>());
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ class Renderer;
 struct SpecularMaterial : Material {
     vec3f rho;
 
-    SpecularMaterial(const std::string &id, const vec3f &rho) : Material(id, "specular reflection"), rho(rho) {}
+    SpecularMaterial(const std::string &id, const vec3f &rho) : Material(id, MaterialType::MATERIAL_SPECULAR), rho(rho) {}
 
     SpecularMaterial() {}
 
