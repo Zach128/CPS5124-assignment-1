@@ -41,9 +41,9 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     RaySampler sampler = RaySampler(camera, width, height, samples);
 
     #pragma omp parallel for schedule(dynamic) private(lights)
-    for(int x = 0; x < width; x++) {
+    for(int x = 0; x < width; ++x) {
         fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
-        for(int y = 0; y < height; y++) {
+        for(int y = 0; y < height; ++y) {
             int i = x + y * width;
 
             vec3f sample = vec3f(0, 0, 0);

@@ -49,10 +49,10 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
     RaySampler sampler = RaySampler(camera, width, height, samples);
 
     #pragma omp parallel for schedule(dynamic) private(lights)
-    for (int x = 0; x < width; x++) {
+    for (int x = 0; x < width; ++x) {
         fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
 
-        for(int y = 0; y < height; y++) {
+        for(int y = 0; y < height; ++y) {
             int i = x + y * width;
 
             vec3f sample = vec3f(0, 0, 0);
@@ -89,7 +89,7 @@ void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLigh
 
         vec3f total_intensity;
 
-        for(int scan = 0; scan < sampleCount; scan++) {
+        for(int scan = 0; scan < sampleCount; ++scan) {
             // Pick a random point on a hemisphere.
             vec3f local = uniformSampleHemisphere(RND2, RND2);
             // The normal of the picked point.

@@ -82,6 +82,7 @@ private:
                 const auto shape_filter = [&shape_id](const std::shared_ptr<Shape> &shape) { return shape->id == shape_id; };
                 auto found_shape = std::find_if(shapes.begin(), shapes.end(), shape_filter);
 
+                // Check if we found the shape or not.
                 if (found_shape == shapes.end()) {
                     std::out_of_range("Area light " + areaLight->id + " references shape " + shape_id + ", but it was not found.\n");
                 }
@@ -127,6 +128,8 @@ private:
                         std::out_of_range("Primitive " + primitive_id + " references material " + mat_id + ", but it was not found.\n");
                     }
 
+                    // Check if the primitive is emissive or not.
+                    // Emissive primitives have additional logic to constructing them.
                     if (primitive_type == PrimitiveType::PRIMITIVE_EMISSIVE) {
                         std::string light_id = primitive.at("light").get<std::string>();
 

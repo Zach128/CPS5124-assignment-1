@@ -23,8 +23,8 @@ public:
         int indices[9];
         vec3f buffer[9];
 
-        for(size_t y = 0; y < height; y++) {
-            for(size_t x = 0; x < width; x++) {
+        for(size_t y = 0; y < height; ++y) {
+            for(size_t x = 0; x < width; ++x) {
                 // Obtain the colour samples and buffer them.
                 indices[0] = ((x - 1 + width) % width + width * ((y - 1 + height) % height)); // location of the UPPER LEFT
 				indices[1] = ((x - 0 + width) % width + width * ((y - 1 + height) % height)); // location of the UPPER CENTER

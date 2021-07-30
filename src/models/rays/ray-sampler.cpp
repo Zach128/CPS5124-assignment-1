@@ -16,7 +16,7 @@ void RaySampler::get_sample_rays(const size_t x, const size_t y, std::vector<Ray
 void RaySampler::get_uniform_sample_rays(const size_t x, const size_t y, std::vector<RayInfo> &rays) {
     vec3f worldDir;
 
-    for (size_t j = 0; j < samples; j++) {
+    for (size_t j = 0; j < samples; ++j) {
         // Calculate a uniform sample offset.
         float sx = pixelWidth * RND2;
         float sy = pixelHeight * RND2;
@@ -36,7 +36,7 @@ void RaySampler::get_stratified_sample_rays(const size_t x, const size_t y, std:
     vec3f worldDir;
     float e = powf(samples, 0.5f);
 
-    for (size_t j = 0; j < samples; j++) {
+    for (size_t j = 0; j < samples; ++j) {
         float sx = RND2;
         float sy = RND2;
 
@@ -59,8 +59,8 @@ void RaySampler::get_stratified_lens_rays(const size_t x, const size_t y, std::v
     std::shared_ptr<LensCamera> lensCamera = std::dynamic_pointer_cast<LensCamera>(camera);
     vec3f worldDir;
 
-    for (size_t j = 0; j < samples; j++) {
-        // Calculate a an offset along the aperture.
+    for (size_t j = 0; j < samples; ++j) {
+        // Calculate an offset along the aperture.
 
         float theta = 2 * M_PI * RND2;
         float r = (lensCamera->alpha / 2.f * sqrtf(RND2)) / 2.f;
