@@ -60,8 +60,8 @@ public:
     void compute_specular_intensity(const std::shared_ptr<Light> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out);
     void compute_glossy(const Camera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out);
     void compute_fresnel(const Camera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out);
-    vec3f compute_reflection(const Camera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, size_t &depth);
-    vec3f compute_refraction(const Camera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> material, size_t &depth);
+    vec3f compute_reflection(const Camera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth);
+    vec3f compute_refraction(const Camera &camera, const RayInfo &srcRay, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth);
 
 private:
     void get_paths(const std::string &filePath, fs::path &renderPath, fs::path &depthPath);
