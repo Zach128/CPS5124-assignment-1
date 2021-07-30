@@ -21,9 +21,17 @@ enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 enable_cxx_compiler_flag_if_supported("-pedantic")
 enable_cxx_compiler_flag_if_supported("-std=c++17")
-# enable_cxx_compiler_flag_if_supported("-O3")
-enable_cxx_compiler_flag_if_supported("-g")
 enable_cxx_compiler_flag_if_supported("-fopenmp")
+
+ADD_CUSTOM_TARGET(debug
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMENT "Creating the executable in the debug mode.")
+
+ADD_CUSTOM_TARGET(release
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMENT "Creating the executable in the release mode.")
 
 file(
     GLOB SOURCES
