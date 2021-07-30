@@ -40,7 +40,7 @@
 
   "scene" : {
     "camera" : "pinhole",
-    "lights" : ["point light"],
+    "lights" : ["area light"],
     "primitives" : [{
       "id" : "center",
       "type" : "geometric",
