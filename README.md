@@ -25,9 +25,9 @@ Source code for my CPS5124 study unit assignment.
     - [x] Linear tone mapper.
 
 ### Task 3
-- [ ] Extend the ray tracer to support the complex effects.
+- [x] Extend the ray tracer to support the complex effects.
     - [x] Path tracer.
-    - [ ] Lens-based camera.
+    - [x] Lens-based camera.
     - [x] Area Lights.
         - [x] Soft shadows.
     - [x] Glossy and translucent surfaces.
