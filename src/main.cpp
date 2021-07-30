@@ -8,33 +8,46 @@
 #include "models/scene.hpp"
 
 int main() {
-    SceneLoader loader = SceneLoader();
-    Scene s;
+    std::vector<std::string> files = {
+        "assignment_01.json",
+        "assignment_02.json",
+        "assignment_03.json",
+        "assignment_04.json",
+        "assignment_05.json",
+        "assignment_06.json",
+        "assignment_07.json",
+        "assignment_08.json",
+    };
 
-    // loader.LoadSceneFile("furnace.json", s);
-    loader.LoadSceneFile("assignment_02.json", s);
+    for(std::string file : files) {
+        SceneLoader loader = SceneLoader();
+        Scene s;
 
-    s.prepare();
+        loader.LoadSceneFile(file, s);
 
-    auto t1 = std::chrono::high_resolution_clock::now();
+        s.prepare();
 
-    std::cout << "Rendering..." << std::endl;
-    s.render();
-    std::cout << "\nDone" << std::endl;
+        auto t1 = std::chrono::high_resolution_clock::now();
 
-    auto t2 = std::chrono::high_resolution_clock::now();
+        std::cout << "Rendering..." << std::endl;
+        s.render();
+        std::cout << "\nDone" << std::endl;
 
-    std::chrono::duration<double, std::milli> timeTaken = t2 - t1;
+        auto t2 = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Rendering completed in " << timeTaken.count() / 1000.0 << " seconds." << std::endl;
+        std::chrono::duration<double, std::milli> timeTaken = t2 - t1;
 
-    // BoxBlur blurer = BoxBlur((size_t) s.renderer->width, (size_t) s.renderer->height);
-    SigmoidalToneMapper sigTone = SigmoidalToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
-    // LinearToneMapper linTone = LinearToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
+        std::cout << "Rendering completed in " << timeTaken.count() / 1000.0 << " seconds." << std::endl;
 
-    sigTone.postProcess(s);
-    // linTone.postProcess(s);
-    // blurer.postProcess(s);
+        // BoxBlur blurer = BoxBlur((size_t) s.renderer->width, (size_t) s.renderer->height);
+        SigmoidalToneMapper sigTone = SigmoidalToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
+        // LinearToneMapper linTone = LinearToneMapper((size_t) s.renderer->width, (size_t) s.renderer->height);
 
-    s.save();
+        sigTone.postProcess(s);
+        // linTone.postProcess(s);
+        // blurer.postProcess(s);
+
+        s.save();
+    }
+
 }

@@ -24,21 +24,20 @@
 #define GLOSS_ALBEDO 0.8
 #define FRES_ALBEDO 0.8
 
-static int max_depth = MAX_RAY_DEPTH;
+static size_t max_depth = MAX_RAY_DEPTH;
 static std::vector<std::shared_ptr<Light>> lights;
 
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
     lights = scene.lights;
-    max_depth = std::max(max_depth, static_cast<int>(max_depth / 2));
+    max_depth = std::max(max_depth, static_cast<size_t>(max_depth / 2));
 
     // Initialise frame buffers.
     Renderer::prepare(scene);
 }
 
 void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
-    std::cout << "Rendering..." << std::endl;
     RaySampler sampler = RaySampler(camera, width, height, samples);
 
     #pragma omp parallel for schedule(dynamic) private(lights)
@@ -58,8 +57,6 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
             framebuffer[i] = sample / samples;
         }
     }
-
-    std::cout << "Done" << std::endl;
 }
 
 vec3f WhittedRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &dist, size_t depth = 0) {

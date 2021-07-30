@@ -133,7 +133,7 @@ vec3f Renderer::compute_refraction(const Camera &camera, const RayInfo &srcRay, 
 }
 
 void Renderer::get_paths(const std::string &filePath, fs::path &renderPath, fs::path &depthPath) {
-    renderPath = fs::path(filePath);
+    const fs::path oldCwd = fs::current_path();
 
     // Check to ensure the output path exists.
     if (!fs::exists("res/output")) fs::create_directory("res/output");
@@ -141,13 +141,12 @@ void Renderer::get_paths(const std::string &filePath, fs::path &renderPath, fs::
     // Change the current directory to the output path.
     fs::current_path("res/output");
 
+    renderPath = fs::absolute(filePath);
+
+    fs::current_path(oldCwd);
+
     depthPath = fs::path(renderPath);
     depthPath = depthPath.replace_filename(depthPath.stem().concat("-depth")).replace_extension(renderPath.extension());
-
-
-    std::cout << renderPath.relative_path() << std::endl;
-    std::cout << renderPath << std::endl;
-    std::cout << depthPath << std::endl;
 }
 
 void Renderer::save() {
