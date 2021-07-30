@@ -91,7 +91,7 @@ void Renderer::compute_glossy(const Camera &camera, const RayInfo &ray, const ve
     // Cast a reflection off the shape to determine the reflection.
     vec3f reflect_color = compute_reflection(camera, ray, hit, N, depth);
 
-    out = out + reflect_color * (1 - material->get_roughness());
+    out = out + reflect_color * (1.f - material->get_roughness());
 }
 
 void Renderer::compute_fresnel(const Camera &camera, const RayInfo &ray, const vec3f &hit, const vec3f &N, const std::shared_ptr<Material> &material, size_t &depth, vec3f &out) {

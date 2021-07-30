@@ -24,14 +24,14 @@
 #define GLOSS_ALBEDO 0.8
 #define FRES_ALBEDO 0.8
 
-static size_t max_depth = MAX_RAY_DEPTH;
+static int max_depth = MAX_RAY_DEPTH;
 static std::vector<std::shared_ptr<Light>> lights;
 
 void WhittedRenderer::prepare(const Scene &scene) {
     std::cout << "Preparing Whitted Renderer" << std::endl;
 
     lights = scene.lights;
-    max_depth = std::min(max_depth, depth);
+    max_depth = std::max(max_depth, static_cast<int>(max_depth / 2));
 
     // Initialise frame buffers.
     Renderer::prepare(scene);
@@ -41,7 +41,7 @@ void WhittedRenderer::render(const std::shared_ptr<Camera> &camera) {
     std::cout << "Rendering..." << std::endl;
     RaySampler sampler = RaySampler(camera, width, height, samples);
 
-    #pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic) private(lights)
     for(int x = 0; x < width; x++) {
         fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
         for(int y = 0; y < height; y++) {
@@ -76,25 +76,26 @@ vec3f WhittedRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float 
     // Record the depth value as an inverse reciprocal of the actual distance.
     dist = 1.f - dist / (1.f + dist);
 
-    for (std::shared_ptr<Light> light : lights) {
-        // If it's our own light, we want it to be given a fixed intensity.
-        if (light->type == LightType::LIGHT_AREA) {
-            if (std::dynamic_pointer_cast<AreaLight>(light)->shape_id == primitive->shape->id) {
-                diffuse_intensity = diffuse_intensity + light->intensity * primitive->material->get_diffuse();
+    if (primitive->material->type == MaterialType::MATERIAL_DIFFUSE) {
+        for (std::shared_ptr<Light> light : lights) {
+            // If it's our own light, we want it to be given a fixed intensity.
+            if (light->type == LightType::LIGHT_AREA) {
+                if (std::dynamic_pointer_cast<AreaLight>(light)->shape_id == primitive->shape->id) {
+                    diffuse_intensity = diffuse_intensity + light->intensity * primitive->material->get_diffuse();
+                }
             }
+
+            compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
+            // If the material is specular, calculate it's specular highlights.
+            // compute_specular_intensity(light, ray, hit, N, specular_intensity);
         }
 
-        compute_diffuse_intensity(light, ray, hit, N, diffuse_intensity);
-        // If the material is specular, calculate it's specular highlights.
-        if (primitive->material->type == MaterialType::MATERIAL_SPECULAR)
-            compute_specular_intensity(light, ray, hit, N, specular_intensity);
+        // Apply the diffuse and specular intensities accordingly.
+        total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity;
+        // total_color = total_color + (primitive->material->get_specular() + specular_intensity * SPEC_ALBEDO);
     }
 
-    // Apply the diffuse and specular intensities accordingly.
-    total_color = total_color + primitive->material->get_diffuse() * diffuse_intensity;
-    total_color = total_color + (primitive->material->get_specular() + specular_intensity * SPEC_ALBEDO);
-
-    if (primitive->material->type == MaterialType::MATERIAL_GLOSSY) compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
+    if (primitive->material->type == MaterialType::MATERIAL_SPECULAR || primitive->material->type == MaterialType::MATERIAL_GLOSSY) compute_glossy(camera, ray, hit, N, primitive->material, depth, total_color);
     else if (primitive->material->type == MaterialType::MATERIAL_FRESNEL) compute_fresnel(camera, ray, hit, N, primitive->material, depth, total_color);
 
     return total_color;

@@ -15,6 +15,7 @@ struct SpecularMaterial : Material {
     SpecularMaterial() {}
 
     vec3f get_diffuse();
+    float get_roughness() { return 0; };
     vec3f get_specular();
 };
 

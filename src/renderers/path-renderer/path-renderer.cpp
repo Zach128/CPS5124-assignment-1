@@ -29,6 +29,7 @@
 #define FRES_ALBEDO 0.8
 
 static size_t max_depth = MAX_RAY_DEPTH;
+static size_t russian_depth;
 static std::vector<std::shared_ptr<Light>> lights;
 static std::vector<std::shared_ptr<Primitive>> primitives;
 
@@ -38,16 +39,16 @@ void PathRenderer::prepare(const Scene &scene) {
     lights = scene.lights;
     primitives = scene.primitives;
     max_depth = std::min(max_depth, depth);
+    russian_depth = std::max(5, static_cast<int>(max_depth / 2));
 
     // Initialise frame buffers.
     Renderer::prepare(scene);
 }
 
 void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
-    std::cout << "Rendering..." << std::endl;
     RaySampler sampler = RaySampler(camera, width, height, samples);
 
-    #pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic) private(lights)
     for (int x = 0; x < width; x++) {
         fprintf(stdout, "\rRendering at %dspp: %8.3f%%", samples, (float) x / width * 100);
 
@@ -66,8 +67,6 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
             framebuffer[i] = sample / samples;
         }
     }
-
-    std::cout << "Done" << std::endl;
 }
 
 void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLight> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
@@ -123,7 +122,7 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
 
     // Russian roulette: starting at depth 5, each recursive step will stop with a probability of 0.1
 	double rrFactor = 1.0;
-	if (depth >= 5) {
+	if (depth >= russian_depth) {
 		const double rrStopProbability = 0.1;
 		if (RND2 <= rrStopProbability) {
 			return vec3f(0, 0, 0);
@@ -143,7 +142,7 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
     // Add the primitive's emittance in case it's an emissive primitive.
     total_color = total_color + primitive->get_emittance() * primitive->material->get_diffuse() * rrFactor;
 
-    if (primitive->material->type == MaterialType::MATERIAL_DIFFUSE || primitive->material->type == MaterialType::MATERIAL_SPECULAR) {
+    if (primitive->material->type == MaterialType::MATERIAL_DIFFUSE) {
         vec3f diffuse_intensity;
         float tmp_dist;
 
@@ -179,17 +178,7 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
         // total_color = total_color + (tmp * primitive->material->get_diffuse()) * cost * 0.1 * rrFactor;
     }
 
-    if (primitive->material->type == MaterialType::MATERIAL_SPECULAR) {
-        vec3f specular_intensity;
-
-        for(std::shared_ptr<Light> light : lights) {
-            compute_specular_intensity(light, ray, hit, N, specular_intensity);
-        }
-
-        total_color = total_color + specular_intensity * rrFactor;
-    }
-
-    if (primitive->material->type == MaterialType::MATERIAL_GLOSSY) {
+    if (primitive->material->type == MaterialType::MATERIAL_GLOSSY || primitive->material->type == MaterialType::MATERIAL_SPECULAR) {
         vec3f glossy_intensity;
 
         compute_glossy(camera, ray, hit, N, primitive->material, depth, glossy_intensity);
