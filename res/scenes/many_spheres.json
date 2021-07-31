@@ -104,6 +104,11 @@
     "centre" : [-2, -3.5, -1],
     "radius" : 1.5
   }, {
+    "id" : "sphere 03",
+    "type" : "sphere",
+    "centre" : [-1, -5.75, 1],
+    "radius" : 1.5
+  }, {
     "id" : "area light 1",
     "type" : "sphere",
     "centre" : [-2.0, 4.0, 1],
@@ -192,6 +197,11 @@
       "type" : "geometric",
       "shape" : "sphere 02",
       "material" : "glossy"
+    }, {
+      "id" : "sphere 03",
+      "type" : "geometric",
+      "shape" : "sphere 03",
+      "material" : "light red diffuse"
     }, {
       "id" : "purple water",
       "type" : "geometric",

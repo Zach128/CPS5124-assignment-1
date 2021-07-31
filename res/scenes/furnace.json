@@ -56,7 +56,7 @@
     "renderer" : {
       "type" : "PT",
       "dimensions" : [512, 512],
-      "samples" : 64,
+      "samples" : 1024,
       "depth" : 12,
       "output" : "../output/furnace.ppm"
     }
