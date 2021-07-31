@@ -15,7 +15,7 @@ public:
     void get_min_max(const std::vector<vec3f> &framebuffer, vec3f &out_min, vec3f &out_max) {
         const size_t length = width * height;
 
-        for(size_t i = 0; i < length; i++) {
+        for(size_t i = 0; i < length; ++i) {
             // Check if any component is greater than our max, saving it if so.
             framebuffer[i].x > out_max.x ? out_max.x = framebuffer[i].x : false;
             framebuffer[i].y > out_max.y ? out_max.y = framebuffer[i].y : false;
@@ -43,7 +43,7 @@ public:
         const vec3f rangeDiff = top - bottom;
 
         // Convert and scale the given vector relative to the new range.
-        for(size_t i = 0; i < length; i++) {
+        for(size_t i = 0; i < length; ++i) {
             framebuffer[i] = rangeDiff * (framebuffer[i] - min) / maxMinDiff + bottom;
         }
 

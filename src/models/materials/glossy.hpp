@@ -11,7 +11,7 @@ struct GlossyMaterial : Material {
     vec3f rho;
     float roughness;
 
-    GlossyMaterial(const std::string &id, const vec3f &rho, const float roughness) : Material(id, "glossy reflection"), rho(rho), roughness(roughness) {}
+    GlossyMaterial(const std::string &id, const vec3f &rho, const float roughness) : Material(id, MaterialType::MATERIAL_GLOSSY), rho(rho), roughness(roughness) {}
 
     GlossyMaterial() {}
 

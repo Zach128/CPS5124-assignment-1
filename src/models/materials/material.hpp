@@ -3,14 +3,26 @@
 #include <nlohmann/json.hpp>
 
 #include "utils/vec.hpp"
-#include "models/object.hpp"
 
 using json = nlohmann::json;
 
 class Renderer;
 
-struct Material : TypedElement {
-    Material(const std::string &id, const std::string &type) : TypedElement(id, type) {}
+enum MaterialType { MATERIAL_NONE = -1, MATERIAL_DIFFUSE, MATERIAL_SPECULAR, MATERIAL_GLOSSY, MATERIAL_FRESNEL };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(MaterialType, {
+    { MATERIAL_NONE, nullptr},
+    { MATERIAL_DIFFUSE, "diffuse" },
+    { MATERIAL_SPECULAR, "specular reflection" },
+    { MATERIAL_GLOSSY, "glossy reflection" },
+    { MATERIAL_FRESNEL, "fresnel dielectric" }
+})
+
+struct Material {
+    std::string id;
+    MaterialType type;
+
+    Material(const std::string &id, const MaterialType type) : id(id), type(type) {}
 
     Material() {}
 

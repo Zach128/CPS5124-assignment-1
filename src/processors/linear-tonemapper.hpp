@@ -26,7 +26,7 @@ public:
         preScale(framebuffer, vec3f(1, 1, 1), bottom, min_color, max_color);
 
         // Apply the sigmoidal function to each colour.
-        for(size_t i = 0; i < length; i++) {
+        for(size_t i = 0; i < length; ++i) {
             framebuffer[i] = (framebuffer[i] / (max_color));
         }
 

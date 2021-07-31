@@ -10,7 +10,7 @@ class Renderer;
 struct DiffuseMaterial : Material {
     vec3f rho;
 
-    DiffuseMaterial(const std::string &id, const vec3f &rho) : Material(id, "diffuse"), rho(rho) {}
+    DiffuseMaterial(const std::string &id, const vec3f &rho) : Material(id, MaterialType::MATERIAL_DIFFUSE), rho(rho) {}
 
     DiffuseMaterial() {}
 

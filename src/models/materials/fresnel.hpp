@@ -12,7 +12,12 @@ struct FresnelMaterial : Material {
     vec3f rhoT;
     float eta;
 
-    FresnelMaterial(const std::string &id, const vec3f &rhoR, const vec3f &rhoT, const float eta) : Material(id, "fresnel dielectric"), rhoR(rhoR), rhoT(rhoT), eta(eta) {}
+    FresnelMaterial(const std::string &id, const vec3f &rhoR, const vec3f &rhoT, const float eta)
+        :
+            Material(id, MaterialType::MATERIAL_FRESNEL),
+            rhoR(rhoR),
+            rhoT(rhoT),
+            eta(eta) {}
 
     FresnelMaterial() {}
 

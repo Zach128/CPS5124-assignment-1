@@ -21,10 +21,17 @@ enable_cxx_compiler_flag_if_supported("-Wall")
 enable_cxx_compiler_flag_if_supported("-Wextra")
 enable_cxx_compiler_flag_if_supported("-pedantic")
 enable_cxx_compiler_flag_if_supported("-std=c++17")
-# enable_cxx_compiler_flag_if_supported("-O3")
-enable_cxx_compiler_flag_if_supported("-g")
+enable_cxx_compiler_flag_if_supported("-fopenmp")
 
-# enable_cxx_compiler_flag_if_supported("-fopenmp")
+ADD_CUSTOM_TARGET(debug
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Debug ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMENT "Creating the executable in the debug mode.")
+
+ADD_CUSTOM_TARGET(release
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release ${CMAKE_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+  COMMENT "Creating the executable in the release mode.")
 
 file(
     GLOB SOURCES
@@ -39,11 +46,16 @@ file(
     "${SRC_DIR}/models/shapes/sphere.cpp"
     "${SRC_DIR}/models/cameras/camera.cpp"
     "${SRC_DIR}/models/cameras/pinhole.cpp"
+    "${SRC_DIR}/models/cameras/lens-camera.cpp"
     "${SRC_DIR}/models/lights/light.cpp"
     "${SRC_DIR}/models/lights/point-light.cpp"
+    "${SRC_DIR}/models/lights/area-light.cpp"
     "${SRC_DIR}/models/scene.cpp"
+    "${SRC_DIR}/models/rays/ray-sampler.cpp"
     "${SRC_DIR}/renderers/renderer.cpp"
+    "${SRC_DIR}/renderers/path-renderer/path-renderer.cpp"
     "${SRC_DIR}/renderers/whitted-renderer/whitted-renderer.cpp"
+    "${SRC_DIR}/utils/utils.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -55,3 +67,9 @@ set(nlohmann_json_DIR "${LIB_DIR}/json")
 add_subdirectory("${nlohmann_json_DIR}")
 find_package(nlohmann_json 3.2.0 REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
+# OpenMP
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
+endif()

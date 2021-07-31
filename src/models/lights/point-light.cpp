@@ -1,7 +1,15 @@
 #include <iostream>
 #include <memory>
 
+#include "models/rays/ray.hpp"
 #include "point-light.hpp"
+
+void PointLight::illuminate(const RayInfo &, const vec3f &hit, const vec3f &, vec3f &lightDir, vec3f &lightIntensity, float &distance) const {
+    lightDir = (position - hit).normalize();
+    distance = (position - hit).norm();
+
+    lightIntensity = intensity;
+}
 
 void from_json(const json &j, PointLight &l) {
   j.at("id").get_to(l.id);

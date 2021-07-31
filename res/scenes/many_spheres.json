@@ -1,0 +1,219 @@
+{
+  "cameras" : [{
+    "id" : "pinhole",
+    "type" : "pinhole",
+    "fov" : 45,
+    "aspect" : 1.0,
+    "distance" : 5.0,
+    "position" : [0, 0, -15],
+    "target" : [0, 0, 0]
+  }, {
+    "id" : "lens-based",
+    "type" : "lens-based",
+    "focal distance" : 14.0,
+    "alpha" : 1.0,
+    "fov" : 45,
+    "aspect" : 1.0,
+    "distance" : 5.0,
+    "position" : [0, 0, -15],
+    "target" : [0, 0, 0]
+  }],
+
+  "materials" : [{
+    "id" : "red diffuse",
+    "type" : "diffuse",
+    "rho" : [0.9, 0, 0]
+  }, {
+    "id" : "green diffuse",
+    "type" : "diffuse",
+    "rho" : [0, 0.9, 0]
+  }, {
+    "id" : "blue diffuse",
+    "type" : "diffuse",
+    "rho" : [0, 0, 0.9]
+  }, {
+    "id" : "grey diffuse",
+    "type" : "diffuse",
+    "rho" : [0.8, 0.8, 0.8]
+  }, {
+    "id" : "light red diffuse",
+    "type" : "diffuse",
+    "rho" : [1.0, 0.5, 0.1]
+  }, {
+    "id" : "light blue diffuse",
+    "type" : "diffuse",
+    "rho" : [0.1, 0.5, 1.0]
+  }, {
+    "id" : "glossy",
+    "type" : "glossy reflection",
+    "rho" : [0.9, 0.9, 0.9],
+    "roughness" : 0.1
+  }, {
+    "id" : "fresnel dielectric",
+    "type" : "fresnel dielectric",
+    "rhoR" : [0.9, 0.9, 0.9],
+    "rhoT" : [0.9, 0.9, 0.9],
+    "eta" : 1.5
+  }, {
+    "id" : "purple fresnel",
+    "type" : "fresnel dielectric",
+    "rhoR" : [0.51, 0.35, 0.76],
+    "rhoT" : [0.51, 0.35, 0.76],
+    "eta" : 1.333
+  }, {
+    "id" : "purple fresnel 2",
+    "type" : "fresnel dielectric",
+    "rhoR" : [0.51, 0.35, 0.76],
+    "rhoT" : [0.51, 0.35, 0.76],
+    "eta" : -1.333
+  }],
+
+  "shapes" : [{
+    "id" : "left wall",
+    "type" : "sphere",
+    "centre" : [-505, 0, 0],
+    "radius" : 500
+  }, {
+    "id" : "right wall",
+    "type" : "sphere",
+    "centre" : [505, 0, 0],
+    "radius" : 500
+  }, {
+    "id" : "far wall",
+    "type" : "sphere",
+    "centre" : [0, 0, 505],
+    "radius" : 500
+  }, {
+    "id" : "ceiling",
+    "type" : "sphere",
+    "centre" : [0, 505, 0],
+    "radius" : 500
+  }, {
+    "id" : "floor",
+    "type" : "sphere",
+    "centre" : [0, -505, 0],
+    "radius" : 500
+  }, {
+    "id" : "sphere 01",
+    "type" : "sphere",
+    "centre" : [2, -3.5, -1],
+    "radius" : 1.5
+  }, {
+    "id" : "sphere 02",
+    "type" : "sphere",
+    "centre" : [-2, -3.5, -1],
+    "radius" : 1.5
+  }, {
+    "id" : "sphere 03",
+    "type" : "sphere",
+    "centre" : [-1, -5.75, 1],
+    "radius" : 1.5
+  }, {
+    "id" : "area light 1",
+    "type" : "sphere",
+    "centre" : [-2.0, 4.0, 1],
+    "radius" : 1
+  }, {
+    "id" : "area light 2",
+    "type" : "sphere",
+    "centre" : [2.0, 3.5, 1],
+    "radius" : 1
+  }, {
+    "id" : "purple water",
+    "type" : "sphere",
+    "centre" : [2.0, 1.5, -7],
+    "radius" : 1
+  }, {
+    "id" : "purple water 2",
+    "type" : "sphere",
+    "centre" : [2.0, 1.5, -7],
+    "radius" : 0.75
+  }],
+
+  "lights" : [{
+    "id" : "point light",
+    "type" : "point",
+    "position" : [0, 1.0, -1],
+    "power" : [300, 300, 300]
+  }, {
+    "id" : "area light 1",
+    "type" : "area",
+    "shape" : "area light 1",
+    "power" : [30, 15, 0]
+  }, {
+    "id" : "area light 2",
+    "type" : "area",
+    "shape" : "area light 2",
+    "power" : [0, 15, 30]
+  }],
+
+  "scene" : {
+    "camera" : "lens-based",
+    "lights" : ["area light 1", "area light 2"],
+    "primitives" : [{
+      "id" : "area light 1",
+      "type" : "emissive",
+      "shape" : "area light 1",
+      "light" : "area light 1",
+      "material" : "light red diffuse"
+    }, {
+      "id" : "area light 2",
+      "type" : "emissive",
+      "shape" : "area light 2",
+      "light" : "area light 2",
+      "material" : "light blue diffuse"
+    }, {
+      "id" : "left wall",
+      "type" : "geometric",
+      "shape" : "left wall",
+      "material" : "green diffuse"
+    }, {
+      "id" : "right wall",
+      "type" : "geometric",
+      "shape" : "right wall",
+      "material" : "red diffuse"
+    }, {
+      "id" : "far wall",
+      "type" : "geometric",
+      "shape" : "far wall",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "ceiling",
+      "type" : "geometric",
+      "shape" : "ceiling",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "floor",
+      "type" : "geometric",
+      "shape" : "floor",
+      "material" : "grey diffuse"
+    }, {
+      "id" : "sphere 01",
+      "type" : "geometric",
+      "shape" : "sphere 01",
+      "material" : "fresnel dielectric"
+    }, {
+      "id" : "sphere 02",
+      "type" : "geometric",
+      "shape" : "sphere 02",
+      "material" : "glossy"
+    }, {
+      "id" : "sphere 03",
+      "type" : "geometric",
+      "shape" : "sphere 03",
+      "material" : "light red diffuse"
+    }, {
+      "id" : "purple water",
+      "type" : "geometric",
+      "shape" : "purple water",
+      "material" : "purple fresnel"
+    }],
+    "renderer" : {
+      "type" : "PT",
+      "dimensions" : [512, 512],
+      "samples" : 64,
+      "depth" : 6,
+      "output" : "../output/many_spheres.ppm"
+    }
+  }
+}
