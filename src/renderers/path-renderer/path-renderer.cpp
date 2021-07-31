@@ -24,9 +24,8 @@
 #include "path-renderer.hpp"
 
 #define MAX_RAY_DEPTH 20
-#define SPEC_ALBEDO 0.3
-#define GLOSS_ALBEDO 0.8
-#define FRES_ALBEDO 0.8
+#define MAX_LIGHT_SAMPLES 4
+#define RR_PROB 0.1
 
 static size_t max_depth = MAX_RAY_DEPTH;
 static size_t russian_depth;
@@ -72,7 +71,6 @@ void PathRenderer::render(const std::shared_ptr<Camera> &camera) {
 void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLight> &light, const RayInfo &ray, const vec3f &hit, const vec3f &N, vec3f &out) {
     if (light->shape->type == ShapeType::SHAPE_SPHERE) {
         std::shared_ptr<Sphere> sphere = std::dynamic_pointer_cast<Sphere>(light->shape);
-        int sampleCount = 4;
 
         vec3f lightIntensity = light->intensity;
         vec3f lightPosition = sphere->position;
@@ -89,7 +87,7 @@ void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLigh
 
         vec3f total_intensity;
 
-        for(int scan = 0; scan < sampleCount; ++scan) {
+        for(int scan = 0; scan < MAX_LIGHT_SAMPLES; ++scan) {
             // Pick a random point on a hemisphere.
             vec3f local = uniformSampleHemisphere(RND2, RND2);
             // The normal of the picked point.
@@ -108,7 +106,7 @@ void PathRenderer::compute_area_diffuse_intensity(const std::shared_ptr<AreaLigh
             compute_diffuse_intensity(dirToPoint, lightIntensity, distToPoint, ray, hit, N, total_intensity);
         }
 
-        out = out + total_intensity / sampleCount;
+        out = out + total_intensity / MAX_LIGHT_SAMPLES;
     } else {
         compute_diffuse_intensity(light, ray, hit, N, out);
     }
@@ -123,11 +121,10 @@ vec3f PathRenderer::cast_ray(const Camera &camera, const RayInfo &ray, float &di
     // Russian roulette: starting at depth 5, each recursive step will stop with a probability of 0.1
 	double rrFactor = 1.0;
 	if (depth >= russian_depth) {
-		const double rrStopProbability = 0.1;
-		if (RND2 <= rrStopProbability) {
+		if (RND2 <= RR_PROB) {
 			return vec3f(0, 0, 0);
 		}
-		rrFactor = 1.0 / (1.0 - rrStopProbability);
+		rrFactor = 1.0 / (1.0 - RR_PROB);
 	}
 
     // Perform the hit-test, saving the hit coordinates, angle, and material that was hit.

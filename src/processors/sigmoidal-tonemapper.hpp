@@ -27,7 +27,7 @@ public:
 
         // Apply the sigmoidal function to each colour.
         for(size_t i = 0; i < length; ++i) {
-            framebuffer[i] = (framebuffer[i] / (1 + framebuffer[i]));
+            framebuffer[i] = (framebuffer[i] / (framebuffer[i] + 1.f));
         }
 
         // Scale back up to the original range (0..255).

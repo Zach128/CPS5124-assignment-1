@@ -18,7 +18,6 @@ struct Light {
     LightType type;
 
     vec3f intensity;
-    Matrix44f lightToWorld;
 
     Light(const std::string &id, const LightType type, const vec3f &intensity)
         :
